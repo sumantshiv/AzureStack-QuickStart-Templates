@@ -223,8 +223,8 @@
                 }
             }
         ],
-        "deployWebroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/master/WebRole/azuredeploy.json",
-        "deployLoadgenroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/master/Multiple-Windows-VM/azuredeploy.json"
+        "deployWebroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/azbetIaas/WebRole/azuredeploy.json",
+        "deployLoadgenroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/azbetIaas/Multiple-Windows-VM/azuredeploy.json"
     },
     "resources": [
         {
