@@ -1,0 +1,432 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "domainName": {
+        "type": "string",
+        "metadata": {
+            "description": "The domain name"
+        },
+        "defaultValue": "contoso.com"
+    },    
+    "adminUsername": {
+        "type": "string",
+        "metadata": {
+            "description": "The name of the Administrator of the new VMs and Domain"
+        },
+        "defaultValue": "lcladmin"
+    },
+
+    "adminPassword": {
+        "type": "string",
+        "metadata": {
+            "description": "The password for the Administrator account of the new VMs and Domain"
+        },            
+        "defaultValue": "p@ssw0rd"
+    },    
+    "username": {
+      "type": "string",
+      "metadata": {
+        "description": "VM local administrator username"
+      },
+        "defaultValue": "lcladmin"
+    },
+    "password": {
+      "type": "string",
+      "metadata": {
+        "description": "VM local administrator password"
+      },
+        "defaultValue": "p@ssw0rd"
+    },
+    "numberOfWebSrvs": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of Web Servers"
+      },
+      "allowedValues": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "defaultValue": 2
+    },
+    "storageAccountType": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS"
+      ],
+      "metadata": {
+        "description": "The type of the Storage Account created"
+      },
+      "defaultValue": "Standard_LRS"
+    },
+    "targetVMNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the existing VM network to connect to"
+            },
+            "defaultValue": "[concat('SQLVNet',resourceGroup().name)]"
+        },
+      "targetVMNetworkSubnetName": {
+          "type": "string",
+          "metadata": {
+              "description": "Name of the exsisting subnet to connect to"
+          },
+          "defaultValue": "[concat('SQLSub',resourceGroup().name)]"
+      }
+  },
+    "variables": {
+        "apiVersion": "2015-06-15",
+        "storageName": "[concat(tolower(resourcegroup().name), 'stg12')]",
+        "vhdContainer": "vhds",
+        "webSrvName": "[concat(resourcegroup().name, 'webSrv')]",
+        "webSrvVMSize": "Standard_A2",
+        "webSrvOSDiks": "[concat(resourcegroup().name, 'WebSrvOS')]",
+        "webSrvNicName": "[concat(variables('webSrvName'), 'Nic')]",
+        "webSrvPublicIP": "[concat(resourcegroup().name, 'websrvpip')]",
+        "webSrvAvailabilitySetName": "[concat(resourcegroup().name, 'webSrvAS')]",
+        "webSrvNumbOfInstances": "[parameters('numberOfWebSrvs')]",
+        "webSrvDnsNameforLBIP": "[concat(toLower(variables('webSrvName')), 'lb')]",
+        "webLbName": "[concat(variables('webSrvName'), 'lb')]",
+        "webLblb_PIP_Id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('webSrvPublicIP'))]",
+        "webLbId": "[resourceId('Microsoft.Network/loadBalancers',variables('webLbName'))]",
+        "frontEndIPConfigID": "[concat(variables('webLbId'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
+        "poolName": "WebBackendPool1",
+        "lbPoolID": "[concat(variables('webLbId'),'/backendAddressPools/',variables('poolName'))]",
+        "lbProbeID1": "[concat(variables('webLbId'),'/probes/webtcpProbe1')]",
+        "lbProbeID2": "[concat(variables('webLbId'),'/probes/webtcpProbe2')]",
+        "vmExtensionName": "dscExtension",
+        "modulesUrl": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/WebRole/WebServerConfig.ps1.zip",
+        "consoleJoinDomainTemplate": "[concat(variables('assetLocation'),'/joindomain.json')]",
+        "assetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/vs2013-tcta",
+        "configurationFunction": "WebServerConfig.ps1\\WebServerConfig",
+        "vnetID": "[resourceId(resourcegroup().name,'Microsoft.Network/virtualNetworks', parameters('targetVMNetworkName'))]",
+        "staticSubnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('targetVMNetworkSubnetName'))]"
+    },
+  "resources": [
+    {
+      "name": "[variables('storageName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "tags": {
+        "displayName": "StorageForEnv"
+      },
+      "properties": {
+        "accountType": "[parameters('storageAccountType')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('webSrvAvailabilitySetName')]",
+      "apiVersion": "[variables('apiVersion')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "WebSrvAvailabilitySet"
+      },
+      "properties": { }
+    },
+    {
+      "name": "[variables('webSrvPublicIP')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('apiVersion')]",
+      "tags": {
+        "displayName": "WebSrvPIP for LB"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 4,
+        "dnsSettings": {
+          "domainNameLabel": "[variables('webSrvDnsNameforLBIP')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "name": "[variables('webLbName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "Web LB"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('webSrvPublicIP'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "LoadBalancerFrontEnd",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('webLblb_PIP_Id')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('poolName')]"
+          }
+        ],
+        "inboundNatRules": [
+            {
+                "name": "RDP-VM0",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[variables('frontEndIPConfigID')]"
+                    },
+                    "protocol": "tcp",
+                    "frontendPort": 50001,
+                    "backendPort": 3389,
+                    "enableFloatingIP": false
+                }
+            },
+            {
+                "name": "RDP-VM1",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[variables('frontEndIPConfigID')]"
+                    },
+                    "protocol": "tcp",
+                    "frontendPort": 50002,
+                    "backendPort": 3389,
+                    "enableFloatingIP": false
+                }
+            },
+            {
+                "name": "RDP-VM2",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[variables('frontEndIPConfigID')]"
+                    },
+                    "protocol": "tcp",
+                    "frontendPort": 50003,
+                    "backendPort": 3389,
+                    "enableFloatingIP": false
+                }
+            },
+            {
+                "name": "RDP-VM3",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[variables('frontEndIPConfigID')]"
+                    },
+                    "protocol": "tcp",
+                    "frontendPort": 50004,
+                    "backendPort": 3389,
+                    "enableFloatingIP": false
+                }
+            }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "LBRule1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('lbPoolID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "probe": {
+                "id": "[variables('lbProbeID1')]"
+              }
+            }
+          },
+          {
+            "name": "LBRule2",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('lbPoolID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "probe": {
+                "id": "[variables('lbProbeID2')]"
+              }
+            }
+          }          
+        ],
+        "probes": [
+          {
+            "name": "webtcpProbe1",
+            "properties": {
+              "protocol": "tcp",
+              "port": 80,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          },
+          {
+            "name": "webtcpProbe2",
+            "properties": {
+              "protocol": "tcp",
+              "port": 443,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[concat(variables('webSrvNicName'), copyindex())]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('apiVersion')]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[variables('webSrvNumbOfInstances')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/loadBalancers/', variables('webLbName'))]"
+      ],
+      "tags": {
+        "displayName": "WebSrvNic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('staticSubnetRef')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id":  "[variables('lbPoolID')]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(variables('webLbId'),'/inboundNatRules/RDP-VM', copyindex())]"
+                }
+              ]
+
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[concat(variables('webSrvName'), copyindex())]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('apiVersion')]",
+      "copy": {
+        "name": "webSrvMachineLoop",
+        "count": "[variables('webSrvNumbOfInstances')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('webSrvNicName'), copyindex())]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('webSrvAvailabilitySetName'))]"
+      ],
+      "tags": {
+        "displayName": "WebSrv"
+      },
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('webSrvAvailabilitySetName'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[variables('webSrvVMSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('webSrvName'),copyindex())]",
+          "adminUsername": "[parameters('username')]",
+          "adminPassword": "[parameters('password')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2012-R2-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "WebSvrOSDisk",
+            "vhd": {
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vhdContainer'), '/', variables('webSrvOSDiks'), copyindex(), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('webSrvNicName'), copyindex()))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+        "name": "[concat('consoleJoinDomainDeployment',copyIndex())]",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2015-01-01",
+        "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('webSrvName'), copyindex())]"
+        ],
+        "copy": {
+        "name": "JoinDomainLoop",
+        "count": "[variables('webSrvNumbOfInstances')]"
+        },  
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[variables('consoleJoinDomainTemplate')]",
+                "contentVersion": "1.0.0.0"
+            },
+            "parameters": {
+                "vmName": { "value": "[concat(variables('webSrvName'), copyindex())]" },
+                "domainToJoin": { "value": "[parameters('domainName')]" },
+                "domainUserName": { "value": "[parameters('adminUsername')]" },
+                "domainPassword": {"value": "[parameters('adminPassword')]"}
+            }
+        }
+    },    
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('webSrvName'), copyindex(),'/', variables('vmExtensionName'))]",
+      "apiVersion": "[variables('apiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "webSrvMachineLoop",
+        "count": "[variables('webSrvNumbOfInstances')]"
+      },
+      "dependsOn": [
+        "JoinDomainLoop"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.19",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "ModulesUrl": "[variables('modulesUrl')]",
+          "ConfigurationFunction": "[variables('configurationFunction')]",
+          "Properties": {
+          }
+        },
+        "protectedSettings": { }
+      }
+    }
+  ]
+}

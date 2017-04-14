@@ -23,6 +23,13 @@
             },
             "defaultValue": "sa"
         },
+        "DatabaseName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name for Azbet database."
+            },
+            "defaultValue": "AzbetDB"
+        },
         "adminUsername": {
             "type": "string",
             "metadata": {
@@ -34,13 +41,129 @@
             "type": "securestring",
             "metadata": {
                 "description": "The password for the Administrator account of the new VMs and Domain"
-            },            
+            },
             "defaultValue": "[concat('Subscription#',subscription().subscriptionId)]"
+        },
+        "CertificateToImport": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the certificate as stored in the Azure blob."
+            },
+            "defaultValue": "AzThings.pfx"
+        },
+        "CertificatePassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password for the certificate."
+            },
+            "defaultValue": "[concat('Subscription#',subscription().subscriptionId)]"
+        },
+        "numberOfWebSrvs": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of Web Servers"
+            },
+            "allowedValues": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "defaultValue": 2
+        },
+        "numberOfLoadgenSrvs": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of LoadGen Servers"
+            },
+            "allowedValues": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "defaultValue": 2
+        },
+        "StorageAccessKey": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage account Access Key to get Azbet binaries from Azure drop location."
+            }
+        },
+        "AzureEnvironmentName": {
+            "type": "string",
+            "metadata": {
+                "description": "Environment name in Azure to get the latest Azbet drop from."
+            }
+        },
+        "StorageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage account in Azure to get the latest Azbet drop from."
+            }
+        },
+        "AzureContainerName": {
+            "type": "string",
+            "metadata": {
+                "description": "Container name in Azure to get the latest Azbet drop from."
+            }
+        },
+        "AzbetDatabaseAzureBlobName": {
+            "type": "string",
+            "metadata": {
+                "description": "Blob name of Azbet database package in Azure to get the latest drop."
+            },
+            "defaultValue": "Database.zip"
+        },
+        "AzbetWebsiteAzureBlobName": {
+            "type": "string",
+            "metadata": {
+                "description": "Blob name of Azbet website package in Azure to get the latest drop."
+            },
+            "defaultValue": "AzBet.zip"
+        },
+        "LoadGenAzureBlobName": {
+            "type": "string",
+            "metadata": {
+                "description": "Blob name of Azbet website package in Azure to get the latest drop."
+            },
+            "defaultValue": "RoboCustosWindowsService.zip"
+        },
+        "EnvironmentRegion": {
+            "type": "string",
+            "metadata": {
+                "description": "Region of the Azure Stack environment."
+            },
+            "defaultValue": "local"
+        },
+        "ExternalFQDN": {
+            "type": "string",
+            "metadata": {
+                "description": "Complete external fqdn."
+            },
+            "defaultValue": "ext-s11r1701.masd.stbtest.microsoft.com"
+        },
+        "DeploymentEnvironmentName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the deployment environment."
+            },
+            "defaultValue": "azbetazstacktest"
         }
     },
     "variables": {
-        "sqlassetLocation": "https://raw.githubusercontent.com/Azure/AzureStack-QuickStart-Templates/master/sql-2014-non-ha",
-        "adAssetLocation": "https://raw.githubusercontent.com/Azure/AzureStack-QuickStart-Templates/master/ad-non-ha",
+        "sqlassetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/sql-2014-non-ha",
+        "adAssetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/ad-non-ha",
+        "azbetAssetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/Azbet",
+        "configureAzbetDBTemplateURL": "[concat(variables('azbetAssetLocation'),'/deployAzbetDBOnNode.json')]",
+        "configureAzbetDBScriptName": "ConfigureSqlDB.ps1",
+        "configureAzbetDBScripts": [ "[concat(variables('azbetAssetLocation'), '/', variables('configureAzbetDBScriptName'))]", "[concat(variables('azbetAssetLocation'), '/', 'SetupAzbet.psm1')]" ],
+        "configureAzbetWebsiteTemplateURL": "[concat(variables('azbetAssetLocation'),'/deployAzbetWebsiteOnNode.json')]",
+        "configureAzbetWebsiteScriptName": "ConfigureWebRole.ps1",
+        "configureAzbetWebScripts": [ "[concat(variables('azbetAssetLocation'), '/', variables('configureAzbetWebsiteScriptName'))]", "[concat(variables('azbetAssetLocation'), '/', 'SetupAzbet.psm1')]" ],
+        "configureLoadGenTemplateURL": "[concat(variables('azbetAssetLocation'),'/deployLoadGenOnNode.json')]",
+        "configureLoadGenScriptName": "ConfigureLoadGen.ps1",
+        "configureLoadGenScripts": [ "[concat(variables('azbetAssetLocation'), '/', variables('configureLoadGenScriptName'))]", "[concat(variables('azbetAssetLocation'), '/', 'SetupAzbet.psm1')]", "[concat(variables('azbetAssetLocation'), '/', 'Deploy-RoboCustos-WindowsService-Remote.ps1')]" ],
         "location": "[resourceGroup().location]",
         "sqlServerServiceAccountPassword": "[parameters('adminPassword')]",
         "vmNetworkSubnet": "10.0.0.0/24",
@@ -70,7 +193,11 @@
         "updateVNetDNS1": "updateVNetDNS1",
         "updateVNetDNS1ID": "[concat('Microsoft.Resources/deployments/', variables('updateVNetDNS1'))]",
         "sqlClusterVmName": "[concat('SQL',resourceGroup().name)]",
+        "webSrvName": "[concat(resourcegroup().name, 'webSrv')]",
         "deploySqlStandalone": "DeploySqlStandalone",
+        "deployWebRole": "DeployWebrole",
+        "webLbName": "[concat(variables('webSrvName'), 'lb')]",
+        "AzBetTargetUrl": "[concat('https://', variables('webLbName'), '.', parameters('EnvironmentRegion'), '.cloudapp.', parameters('ExternalFQDN'))]",
         "deploySqlStandaloneTemplateURL": "[concat(variables('sqlassetLocation'),'/deploySqlStandalone.json')]",
         "publicLBName": "[concat('SQLPLB',resourceGroup().name)]",
         "publicIPAddressName": "[concat('SQLPIP',resourceGroup().name)]",
@@ -95,7 +222,9 @@
                     }
                 }
             }
-        ]
+        ],
+        "deployWebroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/master/WebRole/azuredeploy.json",
+        "deployLoadgenroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/master/Multiple-Windows-VM/azuredeploy.json"
     },
     "resources": [
         {
@@ -343,7 +472,7 @@
                     },
                     "dnsServerAddress": {
                         "value": [
-                            "[variables('primaryIpADAddress')]"                            
+                            "[variables('primaryIpADAddress')]"
                         ]
                     }
                 }
@@ -390,6 +519,261 @@
                     },
                     "assetLocation": {
                         "value": "[variables('sqlassetLocation')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[variables('deployWebRole')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "dependsOn": [
+                "[variables('deploySqlStandalone')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deployWebroleTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "domainName": {
+                        "value": "[parameters('domainName')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "username": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "password": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "numberOfWebSrvs": {
+                        "value": "[parameters('numberOfWebSrvs')]"
+                    },
+                    "targetVMNetworkName": {
+                        "value": "[variables('virtualNetworkName')]"
+                    },
+                    "targetVMNetworkSubnetName": {
+                        "value": "[variables('staticSubnetName')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "DeployLoadgenrole",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "dependsOn": [
+                "[variables('deployWebRole')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deployLoadgenroleTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "domainName": {
+                        "value": "[parameters('domainName')]"
+                    },
+                    "domainAdminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "domainAdminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "numberOfLoadgenSrvs": {
+                        "value": "[parameters('numberOfLoadgenSrvs')]"
+                    },
+                    "targetVMNetworkName": {
+                        "value": "[variables('virtualNetworkName')]"
+                    },
+                    "targetVMNetworkSubnetName": {
+                        "value": "[variables('staticSubnetName')]"
+                    },
+                    "vmName": {
+                        "value": "LoadgenVM"
+                    }
+                }
+            }
+        },
+        {
+            "name": "ConfigureAzbetDB",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "dependsOn": [
+                "[variables('deploySqlStandalone')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('configureAzbetDBTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "scriptFiles": {
+                        "value": "[variables('configureAzbetDBScripts')]"
+                    },
+                    "scriptName": {
+                        "value": "[variables('configureAzbetDBScriptName')]"
+                    },
+                    "StorageAccessKey": {
+                        "value": "[parameters('StorageAccessKey')]"
+                    },
+                    "AzureEnvironmentName": {
+                        "value": "[parameters('AzureEnvironmentName')]"
+                    },
+                    "StorageAccountName": {
+                        "value": "[parameters('StorageAccountName')]"
+                    },
+                    "AzureContainerName": {
+                        "value": "[parameters('AzureContainerName')]"
+                    },
+                    "AzureBlobName": {
+                        "value": "[parameters('AzbetDatabaseAzureBlobName')]"
+                    },
+                    "SqlServerName": {
+                        "value": "[variables('sqlClusterVmName')]"
+                    },
+                    "DatabaseName": {
+                        "value": "[parameters('DatabaseName')]"
+                    },
+                    "SqlAdminUserName": {
+                        "value": "[parameters('sqlServerServiceAccountUserName')]"
+                    },
+                    "SqlAdminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "vmName": {
+                        "value": "[variables('sqlClusterVmName')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[concat('ConfigureAzbetWebsite', copyindex())]",
+            "type": "Microsoft.Resources/deployments",
+            "copy": {
+                "name": "websiteconfigure",
+                "count": "[parameters('numberOfWebSrvs')]"
+            },
+            "apiVersion": "2015-01-01",
+            "dependsOn": [
+                "[variables('deployWebRole')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('configureAzbetWebsiteTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "scriptFiles": {
+                        "value": "[variables('configureAzbetWebScripts')]"
+                    },
+                    "scriptName": {
+                        "value": "[variables('configureAzbetWebsiteScriptName')]"
+                    },
+                    "StorageAccessKey": {
+                        "value": "[parameters('StorageAccessKey')]"
+                    },
+                    "AzureEnvironmentName": {
+                        "value": "[parameters('AzureEnvironmentName')]"
+                    },
+                    "StorageAccountName": {
+                        "value": "[parameters('StorageAccountName')]"
+                    },
+                    "AzureContainerName": {
+                        "value": "[parameters('AzureContainerName')]"
+                    },
+                    "AzureBlobName": {
+                        "value": "[parameters('AzbetWebsiteAzureBlobName')]"
+                    },
+                    "SqlServerName": {
+                        "value": "[variables('sqlClusterVmName')]"
+                    },
+                    "DatabaseName": {
+                        "value": "[parameters('DatabaseName')]"
+                    },
+                    "SqlAdminUserName": {
+                        "value": "[parameters('sqlServerServiceAccountUserName')]"
+                    },
+                    "SqlAdminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "CertificateToImport": {
+                        "value": "[parameters('CertificateToImport')]"
+                    },
+                    "CertificatePassword": {
+                        "value": "[parameters('CertificatePassword')]"
+                    },
+                    "DeploymentEnvironmentName": {
+                        "value": "[parameters('DeploymentEnvironmentName')]"
+                    },
+                    "vmName": {
+                        "value": "[concat(variables('webSrvName'),copyindex())]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[concat('ConfigureLoadGen', copyindex())]",
+            "type": "Microsoft.Resources/deployments",
+            "copy": {
+                "name": "loadgenconfigure",
+                "count": "[parameters('numberOfLoadgenSrvs')]"
+            },
+            "apiVersion": "2015-01-01",
+            "dependsOn": [
+                "DeployLoadgenrole"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('configureLoadGenTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "scriptFiles": {
+                        "value": "[variables('configureLoadGenScripts')]"
+                    },
+                    "scriptName": {
+                        "value": "[variables('configureLoadGenScriptName')]"
+                    },
+                    "StorageAccessKey": {
+                        "value": "[parameters('StorageAccessKey')]"
+                    },
+                    "AzureEnvironmentName": {
+                        "value": "[parameters('AzureEnvironmentName')]"
+                    },
+                    "StorageAccountName": {
+                        "value": "[parameters('StorageAccountName')]"
+                    },
+                    "AzureContainerName": {
+                        "value": "[parameters('AzureContainerName')]"
+                    },
+                    "AzureBlobName": {
+                        "value": "[parameters('LoadGenAzureBlobName')]"
+                    },
+                    "AzBetTargetUrl": {
+                        "value": "[variables('AzBetTargetUrl')]"
+                    },
+                    "DeploymentEnvironmentName": {
+                        "value": "[parameters('DeploymentEnvironmentName')]"
+                    },
+                    "vmName": {
+                        "value": "[concat('LoadgenVM',copyindex())]"
                     }
                 }
             }

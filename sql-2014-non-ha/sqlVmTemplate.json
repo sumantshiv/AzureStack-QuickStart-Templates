@@ -107,7 +107,7 @@
             "name": "[parameters('sqlNicName')]",
             "type": "Microsoft.Network/networkInterfaces",
             "location": "[variables('location')]",
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2015-06-15",
             "properties": {
                 "ipConfigurations": [
                     {
