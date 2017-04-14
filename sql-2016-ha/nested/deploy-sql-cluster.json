@@ -145,43 +145,43 @@
                             "publicIPAddress": {
                                 "id": "[variables('sqlLBPIPAddressID')]"
                             }
-                        },
-                        "backendAddressPools": [
-                            {
-                                "name": "[variables('lbBE')]"
-                            }
-                        ],
-                        "loadBalancingRules": [
-                            {
-                                "name": "[variables('sqlAOListener1')]",
-                                "properties": {
-                                    "frontendIPConfiguration": {
-                                        "id": "[variables('sqlLBFEConfigID1')]"
-                                    },
-                                    "backendAddressPool": {
-                                        "id": "[variables('sqlLBBEAddressPoolID')]"
-                                    },
-                                    "probe": {
-                                        "id": "[variables('sqlLBProbeID1')]"
-                                    },
-                                    "protocol": "Tcp",
-                                    "frontendPort": 1433,
-                                    "backendPort": 1433,
-                                    "enableFloatingIP": true
-                                }
-                            }
-                        ],
-                        "probes": [
-                            {
-                                "name": "[variables('sqlAOProbe1')]",
-                                "properties": {
-                                    "protocol": "Tcp",
-                                    "port": 59999,
-                                    "intervalInSeconds": 5,
-                                    "numberOfProbes": 2
-                                }
-                            }
-                        ]
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('lbBE')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "[variables('sqlAOListener1')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('sqlLBFEConfigID1')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[variables('sqlLBBEAddressPoolID')]"
+                            },
+                            "probe": {
+                                "id": "[variables('sqlLBProbeID1')]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 1433,
+                            "backendPort": 1433,
+                            "enableFloatingIP": true
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "[variables('sqlAOProbe1')]",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 59999,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
                     }
                 ]
             }
