@@ -271,26 +271,12 @@
         "dcStorageAccountType": "Standard_LRS",
         "configuration": {
             "vnetwithDNSTemplateURL": "[concat(parameters('templatesBaseUrl'),'/vnet-with-dns-server.json')]",
-            "nicTemplateURL": "[concat(parameters('templatesBaseUrl'),'/nic.json')]",
-            "rdpIPAdressSetupURL": "[concat(parameters('templatesBaseUrl'),'/publicip-rdp.json')]",
-            "vnetSetupURL": "[concat(parameters('templatesBaseUrl'),'/vnet-new.json')]",
             "setupLBsUrl": "[concat(parameters('templatesBaseUrl'),'/setupLBs-',parameters('loadBalancersType'),'.json')]",
             "creatingNicsUrl": "[concat(parameters('templatesBaseUrl'),'/creatingNICS.json')]",
             "storageAccountVirtualNetworkPublicIP": "[concat(parameters('templatesBaseUrl'),'/storageAccountVirtualNetworkPublicIP.json')]",
             "provisioningVMs": "[concat(parameters('templatesBaseUrl'),'/provisioningVM',parameters('numberOfSqlVMDisks'),'.json')]",
-            "configuringBackupADVM": "[concat(parameters('templatesBaseUrl'),'/configuringBackupADVM.json')]",
-            "preparingAlwaysOnSqlServer": "[concat(parameters('templatesBaseUrl'),'/preparingSqlServer.json')]",
-            "configuringAlwaysOn": "[concat(parameters('templatesBaseUrl'),'/configuringAlwaysOn.json')]",
             "adPDCModulesURL": "[concat(parameters('scriptsBaseUrl'),'/CreateADPDC.ps1.zip')]",
-            "adPDCConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
-            "adBDCModulesURL": "[concat(parameters('scriptsBaseUrl'),'/CreateADBDC.ps1.zip')]",
-            "adBDCConfigurationFunction": "CreateADBDC.ps1\\CreateADBDC",
-            "fswModulesURL": "[concat(parameters('scriptsBaseUrl'),'/CreateFileShareWitness.ps1.zip')]",
-            "fswConfigurationFunction": "CreateFileShareWitness.ps1\\CreateFileShareWitness",
-            "sqlAOPrepareModulesURL": "[concat(parameters('scriptsBaseUrl'),'/PrepareAlwaysOnSqlServer.ps1.zip')]",
-            "sqlAOPrepareConfigurationFunction": "PrepareAlwaysOnSqlServer.ps1\\PrepareAlwaysOnSqlServer",
-            "createClusterModulesURL": "[concat(parameters('scriptsBaseUrl'),'/CreateFailoverCluster.ps1.zip')]",
-            "createClusterConfigurationFunction": "CreateFailoverCluster.ps1\\CreateFailoverCluster"
+            "adPDCConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC"
         }
     },
     "resources": [
