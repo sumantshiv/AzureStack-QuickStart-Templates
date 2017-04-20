@@ -32,8 +32,8 @@
         }
     },
     "variables": {
-        "adAssetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/alwaysOn/ad-non-ha",
-        "sqlassetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/alwaysOn/sql-2016-ha",
+        "adAssetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/alwaysOn1/ad-non-ha",
+        "sqlassetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/alwaysOn1/sql-2016-ha",
         "location": "[resourceGroup().location]",
         "nsgName": "AzbetNsg",
         "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
