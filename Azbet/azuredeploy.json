@@ -58,6 +58,13 @@
             },
             "defaultValue": "[concat('Subscription#',subscription().subscriptionId)]"
         },
+        "windowsImageSKU": {
+            "type": "string",
+            "metadata": {
+                "description": "The Windows image SKU name."
+            },
+            "defaultValue": "2012-R2-Datacenter"
+        },
         "numberOfWebSrvs": {
             "type": "int",
             "metadata": {
@@ -362,6 +369,9 @@
                     "storageAccountType": {
                         "value": "[variables('storageAccountType')]"
                     },
+                    "windowsImageSKU": {
+                        "value": "[parameters('windowsImageSKU')]"
+                    },
                     "vmName": {
                         "value": "[variables('adPDCVMName')]"
                     },
@@ -399,6 +409,9 @@
                     },
                     "subnetResourceId": {
                         "value": "[variables('staticSubnetID')]"
+                    },
+                    "windowsImageSKU": {
+                        "value": "[parameters('windowsImageSKU')]"
                     },
                     "vmName": {
                         "value": "[variables('sqlClusterVmName')]"
@@ -552,6 +565,9 @@
                     "password": {
                         "value": "[parameters('adminPassword')]"
                     },
+                    "windowsImageSKU": {
+                        "value": "[parameters('windowsImageSKU')]"
+                    },
                     "numberOfWebSrvs": {
                         "value": "[parameters('numberOfWebSrvs')]"
                     },
@@ -601,6 +617,9 @@
                     },
                     "targetVMNetworkSubnetName": {
                         "value": "[variables('staticSubnetName')]"
+                    },
+                    "windowsOSVersion": {
+                        "value": "[parameters('windowsImageSKU')]"
                     },
                     "vmName": {
                         "value": "LoadgenVM"

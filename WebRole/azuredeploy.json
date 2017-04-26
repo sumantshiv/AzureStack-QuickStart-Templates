@@ -1,82 +1,89 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {
-    "domainName": {
-        "type": "string",
-        "metadata": {
-            "description": "The domain name"
+    "parameters": {
+        "domainName": {
+            "type": "string",
+            "metadata": {
+                "description": "The domain name"
+            },
+            "defaultValue": "contoso.com"
         },
-        "defaultValue": "contoso.com"
-    },    
-    "adminUsername": {
-        "type": "string",
-        "metadata": {
-            "description": "The name of the Administrator of the new VMs and Domain"
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Administrator of the new VMs and Domain"
+            },
+            "defaultValue": "lcladmin"
         },
-        "defaultValue": "lcladmin"
-    },
 
-    "adminPassword": {
-        "type": "string",
-        "metadata": {
-            "description": "The password for the Administrator account of the new VMs and Domain"
-        },            
-        "defaultValue": "p@ssw0rd"
-    },    
-    "username": {
-      "type": "string",
-      "metadata": {
-        "description": "VM local administrator username"
-      },
-        "defaultValue": "lcladmin"
-    },
-    "password": {
-      "type": "string",
-      "metadata": {
-        "description": "VM local administrator password"
-      },
-        "defaultValue": "p@ssw0rd"
-    },
-    "numberOfWebSrvs": {
-      "type": "int",
-      "metadata": {
-        "description": "Number of Web Servers"
-      },
-      "allowedValues": [
-        1,
-        2,
-        3,
-        4
-      ],
-      "defaultValue": 2
-    },
-    "storageAccountType": {
-      "type": "string",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_GRS"
-      ],
-      "metadata": {
-        "description": "The type of the Storage Account created"
-      },
-      "defaultValue": "Standard_LRS"
-    },
-    "targetVMNetworkName": {
+        "adminPassword": {
+            "type": "string",
+            "metadata": {
+                "description": "The password for the Administrator account of the new VMs and Domain"
+            },
+            "defaultValue": "p@ssw0rd"
+        },
+        "username": {
+            "type": "string",
+            "metadata": {
+                "description": "VM local administrator username"
+            },
+            "defaultValue": "lcladmin"
+        },
+        "password": {
+            "type": "string",
+            "metadata": {
+                "description": "VM local administrator password"
+            },
+            "defaultValue": "p@ssw0rd"
+        },
+        "windowsImageSKU": {
+            "type": "string",
+            "metadata": {
+                "description": "The SKU Name of Windows Image"
+            },
+            "defaultValue": "2012-R2-Datacenter"
+        },
+        "numberOfWebSrvs": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of Web Servers"
+            },
+            "allowedValues": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "defaultValue": 2
+        },
+        "storageAccountType": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS"
+            ],
+            "metadata": {
+                "description": "The type of the Storage Account created"
+            },
+            "defaultValue": "Standard_LRS"
+        },
+        "targetVMNetworkName": {
             "type": "string",
             "metadata": {
                 "description": "Name of the existing VM network to connect to"
             },
             "defaultValue": "[concat('SQLVNet',resourceGroup().name)]"
         },
-      "targetVMNetworkSubnetName": {
-          "type": "string",
-          "metadata": {
-              "description": "Name of the exsisting subnet to connect to"
-          },
-          "defaultValue": "[concat('SQLSub',resourceGroup().name)]"
-      }
-  },
+        "targetVMNetworkSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the exsisting subnet to connect to"
+            },
+            "defaultValue": "[concat('SQLSub',resourceGroup().name)]"
+        }
+    },
     "variables": {
         "apiVersion": "2015-06-15",
         "storageName": "[concat(tolower(resourcegroup().name), 'stg12')]",
@@ -353,12 +360,12 @@
           "adminPassword": "[parameters('password')]"
         },
         "storageProfile": {
-          "imageReference": {
-            "publisher": "MicrosoftWindowsServer",
-            "offer": "WindowsServer",
-            "sku": "2012-R2-Datacenter",
-            "version": "latest"
-          },
+            "imageReference": {
+                "publisher": "MicrosoftWindowsServer",
+                "offer": "WindowsServer",
+                "sku": "[parameters('windowsImageSKU')]",
+                "version": "latest"
+            },
           "osDisk": {
             "name": "WebSvrOSDisk",
             "vhd": {
