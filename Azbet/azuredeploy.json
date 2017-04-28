@@ -162,6 +162,8 @@
         "sqlassetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/sql-2014-non-ha",
         "adAssetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/ad-non-ha",
         "azbetAssetLocation": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/Azbet",
+        "deployWebroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/azbetIaas/WebRole/azuredeploy.json",
+        "deployLoadgenroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/azbetIaas/Multiple-Windows-VM/azuredeploy.json",
         "configureAzbetDBTemplateURL": "[concat(variables('azbetAssetLocation'),'/deployAzbetDBOnNode.json')]",
         "configureAzbetDBScriptName": "ConfigureSqlDB.ps1",
         "configureAzbetDBScripts": [ "[concat(variables('azbetAssetLocation'), '/', variables('configureAzbetDBScriptName'))]", "[concat(variables('azbetAssetLocation'), '/', 'SetupAzbet.psm1')]" ],
@@ -185,29 +187,30 @@
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
         "staticSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('staticSubnetName'))]",
         "adTemplateURL": "[concat(variables('adAssetLocation'),'/adVmTemplate.json')]",
-        "adStorageName": "[tolower(concat('adsa',resourceGroup().name))]",
+        "adStorageName": "[tolower(substring(concat('adsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18))]",
         "adVmDeployment": "CreateAdVms",
         "adVmDeploymentId": "[concat('Microsoft.Resources/deployments/', variables('adVmDeployment'))]",
         "deployPrimaryAdTemplateURL": "[concat(variables('adAssetLocation'),'/deployPrimaryAD.json')]",
         "deployPrimaryAd": "DeployPrimaryAd",
         "deployPrimaryAdID": "[concat('Microsoft.Resources/deployments/', variables('deployPrimaryAd'))]",
-        "sqlStorageName": "[tolower(concat('sqlsa',resourceGroup().name))]",
+        "sqlStorageName": "[tolower(substring(concat('sqlsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18))]",
         "sqlClusterTemplateURL": "[concat(variables('sqlassetLocation'),'/sqlVmTemplate.json')]",
         "deploySqlClusterVms": "CreateSqlClusterVms",
         "deploySqlClusterVmsID": "[concat('Microsoft.Resources/deployments/', variables('deploySqlClusterVms'))]",
-        "adPDCVMName": "[concat('SQLAD',resourceGroup().name)]",
+        "adPDCVMName": "[substring(concat('PriAD-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
         "vnetwithDNSTemplateURL": "[concat(variables('adAssetLocation'),'/vnet-with-dns-server.json')]",
         "updateVNetDNS1": "updateVNetDNS1",
         "updateVNetDNS1ID": "[concat('Microsoft.Resources/deployments/', variables('updateVNetDNS1'))]",
-        "sqlClusterVmName": "[concat('SQL',resourceGroup().name)]",
-        "webSrvName": "[concat(resourcegroup().name, 'webSrv')]",
+        "sqlClusterVmName": "[substring(concat('SQL-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
+        "webSrvName": "[substring(concat('WebSrv-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 5)]",
+        "loadGenSrvName": "[substring(concat('LoadGen-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 5)]",
         "deploySqlStandalone": "DeploySqlStandalone",
         "deployWebRole": "DeployWebrole",
-        "webLbName": "[concat(variables('webSrvName'), 'lb')]",
+        "webLbName": "[concat('LB-', variables('webSrvName'))]",
         "AzBetTargetUrl": "[concat('https://', variables('webLbName'), '.', parameters('EnvironmentRegion'), '.cloudapp.', parameters('ExternalFQDN'))]",
         "deploySqlStandaloneTemplateURL": "[concat(variables('sqlassetLocation'),'/deploySqlStandalone.json')]",
-        "publicLBName": "[concat('SQLPLB',resourceGroup().name)]",
-        "publicIPAddressName": "[concat('SQLPIP',resourceGroup().name)]",
+        "publicLBName": "[substring(concat('SQLPLB-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
+        "publicIPAddressName": "[substring(concat('SQLPIP-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
         "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
         "lbFE": "SQLLBFE",
         "rpdNAT": "SQLRDPNAT",
@@ -229,9 +232,7 @@
                     }
                 }
             }
-        ],
-        "deployWebroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/azbetIaas/WebRole/azuredeploy.json",
-        "deployLoadgenroleTemplateURL": "https://raw.githubusercontent.com/sumantshiv/azurestack-quickstart-templates/azbetIaas/Multiple-Windows-VM/azuredeploy.json"
+        ]
     },
     "resources": [
         {
@@ -622,7 +623,7 @@
                         "value": "[parameters('windowsImageSKU')]"
                     },
                     "vmName": {
-                        "value": "LoadgenVM"
+                        "value": "[variables('loadGenSrvName')]"
                     }
                 }
             }
