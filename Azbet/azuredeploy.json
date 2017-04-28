@@ -101,7 +101,8 @@
             "type": "string",
             "metadata": {
                 "description": "Environment name in Azure to get the latest Azbet drop from."
-            }
+            },
+            "defaultValue": "AzureCloud"
         },
         "StorageAccountName": {
             "type": "string",
@@ -141,7 +142,7 @@
             "metadata": {
                 "description": "Region of the Azure Stack environment."
             },
-            "defaultValue": "local"
+            "defaultValue": "[resourceGroup().location]"
         },
         "ExternalFQDN": {
             "type": "string",
@@ -187,13 +188,13 @@
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
         "staticSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('staticSubnetName'))]",
         "adTemplateURL": "[concat(variables('adAssetLocation'),'/adVmTemplate.json')]",
-        "adStorageName": "[tolower(substring(concat('adsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18))]",
+        "adStorageName": "[tolower(substring(concat('adsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18)))]",
         "adVmDeployment": "CreateAdVms",
         "adVmDeploymentId": "[concat('Microsoft.Resources/deployments/', variables('adVmDeployment'))]",
         "deployPrimaryAdTemplateURL": "[concat(variables('adAssetLocation'),'/deployPrimaryAD.json')]",
         "deployPrimaryAd": "DeployPrimaryAd",
         "deployPrimaryAdID": "[concat('Microsoft.Resources/deployments/', variables('deployPrimaryAd'))]",
-        "sqlStorageName": "[tolower(substring(concat('sqlsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18))]",
+        "sqlStorageName": "[tolower(substring(concat('sqlsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18)))]",
         "sqlClusterTemplateURL": "[concat(variables('sqlassetLocation'),'/sqlVmTemplate.json')]",
         "deploySqlClusterVms": "CreateSqlClusterVms",
         "deploySqlClusterVmsID": "[concat('Microsoft.Resources/deployments/', variables('deploySqlClusterVms'))]",
