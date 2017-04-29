@@ -198,7 +198,7 @@
         "sqlClusterTemplateURL": "[concat(variables('sqlassetLocation'),'/sqlVmTemplate.json')]",
         "deploySqlClusterVms": "CreateSqlClusterVms",
         "deploySqlClusterVmsID": "[concat('Microsoft.Resources/deployments/', variables('deploySqlClusterVms'))]",
-        "adPDCVMName": "AzbetAD",
+        "adPDCVMName": "[substring(concat('AD-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
         "vnetwithDNSTemplateURL": "[concat(variables('adAssetLocation'),'/vnet-with-dns-server.json')]",
         "updateVNetDNS1": "updateVNetDNS1",
         "updateVNetDNS1ID": "[concat('Microsoft.Resources/deployments/', variables('updateVNetDNS1'))]",
