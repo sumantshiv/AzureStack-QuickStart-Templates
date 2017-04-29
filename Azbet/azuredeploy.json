@@ -204,6 +204,7 @@
         "updateVNetDNS1ID": "[concat('Microsoft.Resources/deployments/', variables('updateVNetDNS1'))]",
         "sqlClusterVmName": "[substring(concat('SQL-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
         "webSrvNamePrefix": "WebSrv",
+        "webSrvName": "[tolower(substring(concat(parameters('webSrvNamePrefix'), replace(resourceGroup().Id,'-','')), 0, 8))]",
         "loadGenSrvName": "[substring(concat('LoadGen-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 5)]",
         "deploySqlStandalone": "DeploySqlStandalone",
         "deployWebRole": "DeployWebrole",
@@ -570,6 +571,9 @@
                     "windowsImageSKU": {
                         "value": "[parameters('windowsImageSKU')]"
                     },
+                    "webSrvNamePrefix": {
+                        "value": "[variables('webSrvNamePrefix')]"
+                    },
                     "numberOfWebSrvs": {
                         "value": "[parameters('numberOfWebSrvs')]"
                     },
@@ -743,7 +747,7 @@
                         "value": "[parameters('DeploymentEnvironmentName')]"
                     },
                     "vmName": {
-                        "value": "[concat(variables('webSrvNamePrefix'),copyindex())]"
+                        "value": "[concat(variables('webSrvName'), copyindex())]"
                     }
                 }
             }
