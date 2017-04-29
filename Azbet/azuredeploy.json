@@ -76,7 +76,7 @@
                 3,
                 4
             ],
-            "defaultValue": 2
+            "defaultValue": 4
         },
         "numberOfLoadgenSrvs": {
             "type": "int",
@@ -89,7 +89,7 @@
                 3,
                 4
             ],
-            "defaultValue": 2
+            "defaultValue": 4
         },
         "StorageAccessKey": {
             "type": "string",
@@ -198,7 +198,7 @@
         "sqlClusterTemplateURL": "[concat(variables('sqlassetLocation'),'/sqlVmTemplate.json')]",
         "deploySqlClusterVms": "CreateSqlClusterVms",
         "deploySqlClusterVmsID": "[concat('Microsoft.Resources/deployments/', variables('deploySqlClusterVms'))]",
-        "adPDCVMName": "[substring(concat('PriAD-', replace(resourceGroup().Id,'-','')), 0, 8)]",
+        "adPDCVMName": "AzbetAD",
         "vnetwithDNSTemplateURL": "[concat(variables('adAssetLocation'),'/vnet-with-dns-server.json')]",
         "updateVNetDNS1": "updateVNetDNS1",
         "updateVNetDNS1ID": "[concat('Microsoft.Resources/deployments/', variables('updateVNetDNS1'))]",
@@ -209,10 +209,10 @@
         "loadGenSrvName": "[tolower(substring(concat(variables('loadGenNamePrefix'), replace(resourceGroup().Id,'-','')), 0, 8))]",
         "deploySqlStandalone": "DeploySqlStandalone",
         "deployWebRole": "DeployWebrole",
-        "webLbName": "[concat(parameters('webSrvNamePrefix'), 'lb')]",
+        "webLbName": "[concat(variables('webSrvNamePrefix'), 'lb')]",
         "AzBetTargetUrl": "[concat('https://', variables('webLbName'), '.', parameters('EnvironmentRegion'), '.cloudapp.', parameters('ExternalFQDN'))]",
         "deploySqlStandaloneTemplateURL": "[concat(variables('sqlassetLocation'),'/deploySqlStandalone.json')]",
-        "publicLBName": "[substring(concat('SQLPLB-', replace(resourceGroup().Id,'-','')), 0, 8)]",
+        "publicLBName": "sqllb",
         "publicIPAddressName": "[substring(concat('SQLPIP-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
         "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
         "lbFE": "SQLLBFE",
@@ -798,7 +798,7 @@
                         "value": "[parameters('DeploymentEnvironmentName')]"
                     },
                     "vmName": {
-                        "value": "[concat([variables('loadGenSrvName'),copyindex())]"
+                        "value": "[concat(variables('loadGenSrvName'),copyindex())]"
                     }
                 }
             }
