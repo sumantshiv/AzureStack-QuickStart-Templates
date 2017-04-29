@@ -198,20 +198,21 @@
         "sqlClusterTemplateURL": "[concat(variables('sqlassetLocation'),'/sqlVmTemplate.json')]",
         "deploySqlClusterVms": "CreateSqlClusterVms",
         "deploySqlClusterVmsID": "[concat('Microsoft.Resources/deployments/', variables('deploySqlClusterVms'))]",
-        "adPDCVMName": "[substring(concat('PriAD-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
+        "adPDCVMName": "[substring(concat('PriAD-', replace(resourceGroup().Id,'-','')), 0, 8)]",
         "vnetwithDNSTemplateURL": "[concat(variables('adAssetLocation'),'/vnet-with-dns-server.json')]",
         "updateVNetDNS1": "updateVNetDNS1",
         "updateVNetDNS1ID": "[concat('Microsoft.Resources/deployments/', variables('updateVNetDNS1'))]",
-        "sqlClusterVmName": "[substring(concat('SQL-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
+        "sqlClusterVmName": "[substring(concat('SQL-', replace(resourceGroup().Id,'-','')), 0, 8)]",
         "webSrvNamePrefix": "WebSrv",
         "webSrvName": "[tolower(substring(concat(variables('webSrvNamePrefix'), replace(resourceGroup().Id,'-','')), 0, 8))]",
-        "loadGenSrvName": "[substring(concat('LoadGen-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 5)]",
+        "loadGenNamePrefix": "LoadGen",
+        "loadGenSrvName": "[tolower(substring(concat(variables('loadGenNamePrefix'), replace(resourceGroup().Id,'-','')), 0, 8))]",
         "deploySqlStandalone": "DeploySqlStandalone",
         "deployWebRole": "DeployWebrole",
-        "webLbName": "[concat('LB', variables('webSrvNamePrefix'))]",
+        "webLbName": "[concat(parameters('webSrvNamePrefix'), 'lb')]",
         "AzBetTargetUrl": "[concat('https://', variables('webLbName'), '.', parameters('EnvironmentRegion'), '.cloudapp.', parameters('ExternalFQDN'))]",
         "deploySqlStandaloneTemplateURL": "[concat(variables('sqlassetLocation'),'/deploySqlStandalone.json')]",
-        "publicLBName": "[substring(concat('SQLPLB-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
+        "publicLBName": "[substring(concat('SQLPLB-', replace(resourceGroup().Id,'-','')), 0, 8)]",
         "publicIPAddressName": "[substring(concat('SQLPIP-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
         "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
         "lbFE": "SQLLBFE",
@@ -499,8 +500,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('updateVNetDNS1ID')]",
-                "[variables('deploySqlClusterVmsID')]"
+                "[variables('updateVNetDNS1ID')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -544,7 +544,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('deploySqlStandalone')]"
+                "[variables('updateVNetDNS1ID')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -591,7 +591,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('deployWebRole')]"
+                "[variables('updateVNetDNS1ID')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -798,7 +798,7 @@
                         "value": "[parameters('DeploymentEnvironmentName')]"
                     },
                     "vmName": {
-                        "value": "[concat('LoadgenVM',copyindex())]"
+                        "value": "[concat([variables('loadGenSrvName'),copyindex())]"
                     }
                 }
             }

@@ -103,7 +103,7 @@
         "webSrvAvailabilitySetName": "[concat(resourcegroup().name, 'webSrvAS')]",
         "webSrvNumbOfInstances": "[parameters('numberOfWebSrvs')]",
         "webSrvDnsNameforLBIP": "[concat(toLower(variables('webSrvName')), 'lb')]",
-        "webLbName": "[concat(variables('webSrvName'), 'lb')]",
+        "webLbName": "[concat(parameters('webSrvNamePrefix'), 'lb')]",
         "webLblb_PIP_Id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('webSrvPublicIP'))]",
         "webLbId": "[resourceId('Microsoft.Network/loadBalancers',variables('webLbName'))]",
         "frontEndIPConfigID": "[concat(variables('webLbId'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",

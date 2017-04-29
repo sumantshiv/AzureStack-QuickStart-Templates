@@ -105,15 +105,15 @@
         "modulesUrl": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/azbetIaas/Multiple-Windows-VM/MachineConfig.ps1.zip",
         "vmExtensionName": "dscExtension",
         "configurationFunction": "MachineConfig.ps1\\MachineConfig",
-        "webLbName": "[concat('LoadgenLB', resourcegroup().name)]",
-        "webLblb_PIP_Id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('dnsNameForPublicIP'))]",
-        "webLbId": "[resourceId('Microsoft.Network/loadBalancers',variables('webLbName'))]",
-        "frontEndIPConfigID": "[concat(variables('webLbId'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
-        "lbProbeID1": "[concat(variables('webLbId'),'/probes/LGtcpProbe1')]",
-        "lbProbeID2": "[concat(variables('webLbId'),'/probes/LGtcpProbe2')]",
+        "loadGenLbName": "[concat('LoadgenLB', resourcegroup().name)]",
+        "loadGenL_PIP_Id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('dnsNameForPublicIP'))]",
+        "loadGenLbId": "[resourceId('Microsoft.Network/loadBalancers',variables('loadGenLbName'))]",
+        "frontEndIPConfigID": "[concat(variables('loadGenLbId'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
+        "lbProbeID1": "[concat(variables('loadGenLbId'),'/probes/LGtcpProbe1')]",
+        "lbProbeID2": "[concat(variables('loadGenLbId'),'/probes/LGtcpProbe2')]",
         "backendPoolName": "loadgenBackendPool",
-        "lbPoolID": "[concat(variables('webLbId'),'/backendAddressPools/',variables('backendPoolName'))]",
-        "lbProbeID": "[concat(variables('webLbId'),'/probes/loadgentcpProbe')]"
+        "lbPoolID": "[concat(variables('loadGenLbId'),'/backendAddressPools/',variables('backendPoolName'))]",
+        "lbProbeID": "[concat(variables('loadGenLbId'),'/probes/loadgentcpProbe')]"
     },
 
     "resources": [
@@ -148,7 +148,7 @@
         },
         {
             "apiVersion": "2015-06-15",
-            "name": "[variables('webLbName')]",
+            "name": "[variables('loadGenLbName')]",
             "type": "Microsoft.Network/loadBalancers",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -163,7 +163,7 @@
                         "name": "LoadBalancerFrontEnd",
                         "properties": {
                             "publicIPAddress": {
-                                "id": "[variables('webLblb_PIP_Id')]"
+                                "id": "[variables('loadGenL_PIP_Id')]"
                             }
                         }
                     }
@@ -295,7 +295,7 @@
                 "count": "[parameters('numberOfLoadgenSrvs')]"
             },
             "dependsOn": [
-                "[concat('Microsoft.Network/loadBalancers/', variables('webLbName'))]"
+                "[concat('Microsoft.Network/loadBalancers/', variables('loadGenLbName'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -313,7 +313,7 @@
                             ],
                             "loadBalancerInboundNatRules": [
                                 {
-                                    "id": "[concat(variables('webLbId'),'/inboundNatRules/RDP-VM', copyindex())]"
+                                    "id": "[concat(variables('loadGenLbId'),'/inboundNatRules/RDP-VM', copyindex())]"
                                 }
                             ]
                         }
