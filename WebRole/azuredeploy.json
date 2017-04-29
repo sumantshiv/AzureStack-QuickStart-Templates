@@ -93,7 +93,7 @@
     },
     "variables": {
         "apiVersion": "2015-06-15",
-        "storageName": "[tolower(substring(concat('webSrv', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18))]",
+        "storageName": "[tolower(substring(concat('webSrv', replace(resourceGroup().Id,'-','')), 0, 18))]",
         "vhdContainer": "vhds",
         "webSrvName": "[tolower(substring(concat(parameters('webSrvNamePrefix'), replace(resourceGroup().Id,'-','')), 0, 8))]",
         "webSrvVMSize": "Standard_A2",
