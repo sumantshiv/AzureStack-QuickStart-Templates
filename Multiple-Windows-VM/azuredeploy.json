@@ -152,7 +152,7 @@
             "type": "Microsoft.Network/loadBalancers",
             "location": "[resourceGroup().location]",
             "tags": {
-                "displayName": "Web LB"
+                "displayName": "LoadGen LB"
             },
             "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('dnsNameForPublicIP'))]"
@@ -379,14 +379,14 @@
             }
         },
         {
-            "name": "[concat('consoleJoinDomainDeployment',copyIndex())]",
+            "name": "[concat('consoleJoinDomainDeploymentloadGen',copyIndex())]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
                 "vmLoop"
             ],
             "copy": {
-                "name": "JoinDomainLoop",
+                "name": "LoadGenJoinDomainLoop",
                 "count": "[parameters('numberOfLoadgenSrvs')]"
             },
             "properties": {
@@ -413,7 +413,7 @@
                 "count": "[parameters('numberOfLoadgenSrvs')]"
             },
             "dependsOn": [
-                "JoinDomainLoop"
+                "LoadGenJoinDomainLoop"
             ],
             "properties": {
                 "publisher": "Microsoft.Powershell",
