@@ -45,6 +45,13 @@
             },
             "defaultValue": "2012-R2-Datacenter"
         },
+        "webSrvNamePrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The SKU Name of Windows Image"
+            },
+            "defaultValue": "WebSrv"
+        },
         "numberOfWebSrvs": {
             "type": "int",
             "metadata": {
@@ -88,7 +95,7 @@
         "apiVersion": "2015-06-15",
         "storageName": "[tolower(substring(concat('webSrv', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18))]",
         "vhdContainer": "vhds",
-        "webSrvName": "[concat(resourcegroup().name, 'webSrv')]",
+        "webSrvName": "[tolower(substring(concat(parameters('webSrvNamePrefix'), replace(resourceGroup().Id,'-','')), 0, 8))]",
         "webSrvVMSize": "Standard_A2",
         "webSrvOSDiks": "[concat(resourcegroup().name, 'WebSrvOS')]",
         "webSrvNicName": "[concat(variables('webSrvName'), 'Nic')]",

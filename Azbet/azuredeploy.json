@@ -188,13 +188,13 @@
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
         "staticSubnetID": "[concat(variables('vnetID'),'/subnets/',variables('staticSubnetName'))]",
         "adTemplateURL": "[concat(variables('adAssetLocation'),'/adVmTemplate.json')]",
-        "adStorageName": "[tolower(substring(concat('adsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18)))]",
+        "adStorageName": "[tolower(substring(concat('adsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 12))]",
         "adVmDeployment": "CreateAdVms",
         "adVmDeploymentId": "[concat('Microsoft.Resources/deployments/', variables('adVmDeployment'))]",
         "deployPrimaryAdTemplateURL": "[concat(variables('adAssetLocation'),'/deployPrimaryAD.json')]",
         "deployPrimaryAd": "DeployPrimaryAd",
         "deployPrimaryAdID": "[concat('Microsoft.Resources/deployments/', variables('deployPrimaryAd'))]",
-        "sqlStorageName": "[tolower(substring(concat('sqlsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 18)))]",
+        "sqlStorageName": "[tolower(substring(concat('sqlsa', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 12))]",
         "sqlClusterTemplateURL": "[concat(variables('sqlassetLocation'),'/sqlVmTemplate.json')]",
         "deploySqlClusterVms": "CreateSqlClusterVms",
         "deploySqlClusterVmsID": "[concat('Microsoft.Resources/deployments/', variables('deploySqlClusterVms'))]",
@@ -203,11 +203,11 @@
         "updateVNetDNS1": "updateVNetDNS1",
         "updateVNetDNS1ID": "[concat('Microsoft.Resources/deployments/', variables('updateVNetDNS1'))]",
         "sqlClusterVmName": "[substring(concat('SQL-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
-        "webSrvName": "[substring(concat('WebSrv-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 5)]",
+        "webSrvNamePrefix": "WebSrv",
         "loadGenSrvName": "[substring(concat('LoadGen-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 5)]",
         "deploySqlStandalone": "DeploySqlStandalone",
         "deployWebRole": "DeployWebrole",
-        "webLbName": "[concat('LB-', variables('webSrvName'))]",
+        "webLbName": "[concat('LB', variables('webSrvNamePrefix'))]",
         "AzBetTargetUrl": "[concat('https://', variables('webLbName'), '.', parameters('EnvironmentRegion'), '.cloudapp.', parameters('ExternalFQDN'))]",
         "deploySqlStandaloneTemplateURL": "[concat(variables('sqlassetLocation'),'/deploySqlStandalone.json')]",
         "publicLBName": "[substring(concat('SQLPLB-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
@@ -743,7 +743,7 @@
                         "value": "[parameters('DeploymentEnvironmentName')]"
                     },
                     "vmName": {
-                        "value": "[concat(variables('webSrvName'),copyindex())]"
+                        "value": "[concat(variables('webSrvNamePrefix'),copyindex())]"
                     }
                 }
             }
