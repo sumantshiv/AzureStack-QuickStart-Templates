@@ -162,6 +162,14 @@ function Set-AzBetDatabase
    & $loadDataFilePath
 
    popd
+
+   $aspregSqlExePath = Join-Path -Path $env:windir -ChildPath "Microsoft.NET\Framework64\v2.0.50727\aspnet_regsql.exe"
+
+   $aspregSqlArgs = "-S $SqlServerName -U $SqlAdminUserName -P $SqlAdminPassword -ssadd -sstype p"
+
+   $command = "$aspregSqlExePath $aspregSqlArgs"
+
+   Invoke-Expression $command
 }
 
 ###
