@@ -186,10 +186,12 @@ function Set-AzBetWebsite
     # Set the Sql connection string info.
     $connectionString = Get-SqlConnectionString -ServerName $SqlServerName -DatabaseName $DatabaseName -UserName $SqlAdminUserName -Password $SqlAdminPassword
 
+    $SQLSessionStoreConnectionString = Get-SqlConnectionString -ServerName $SqlServerName -DatabaseName "ASPState" -UserName $SqlAdminUserName -Password $SqlAdminPassword
+
     # Set Web Config
     $WebConfigPath = Join-Path -Path $unzipPath -ChildPath "Web.config"
 
-    Set-WebConfig -WebConfigPath $WebConfigPath -SQLConnectionString $connectionString -DeploymentEnvironmentName $DeploymentEnvironmentName
+    Set-WebConfig -WebConfigPath $WebConfigPath -SQLConnectionString $connectionString -DeploymentEnvironmentName $DeploymentEnvironmentName -SQLSessionStoreConnectionString $SQLSessionStoreConnectionString
 
     # Copy Website files to IIS Directory
     $iisRootPath = "$env:SystemDrive\inetpub\wwwroot"
@@ -244,6 +246,10 @@ function Set-WebConfig
 
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
+        [string] $SQLSessionStoreConnectionString,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
         [string] $DeploymentEnvironmentName
     )
 
@@ -251,6 +257,9 @@ function Set-WebConfig
 
     $connectionElement = $webConfig.configuration.connectionStrings.add | ? Name -EQ "DefaultConnection"
     $connectionElement.connectionString = $SQLConnectionString
+
+    $sessionStoreconnectionElement = $webConfig.configuration.connectionStrings.add | ? Name -EQ "SessionStoreConnection"
+    $sessionStoreconnectionElement.connectionString = $SQLSessionStoreConnectionString
 
     $logEnvironment = $webConfig.configuration.appSettings.add | ? key -EQ "LogEnvironment"
     $logEnvironment.value = $DeploymentEnvironmentName
