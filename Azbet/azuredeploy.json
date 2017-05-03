@@ -209,8 +209,9 @@
         "loadGenSrvName": "[tolower(substring(concat(variables('loadGenNamePrefix'), uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8))]",
         "deploySqlStandalone": "DeploySqlStandalone",
         "deployWebRole": "DeployWebrole",
-        "webLbName": "[concat(variables('webSrvNamePrefix'), 'lb')]",
-        "AzBetTargetUrl": "[concat('https://', variables('webLbName'), '.', parameters('EnvironmentRegion'), '.cloudapp.', parameters('ExternalFQDN'))]",
+        "deployLoadGen": "DeployLoadgenrole",
+        "webSrvDnsNameforLBIP": "[concat(variables('webSrvName'), 'lb')]",
+        "AzBetTargetUrl": "[concat('https://', variables('webSrvDnsNameforLBIP'), '.', parameters('EnvironmentRegion'), '.cloudapp.', parameters('ExternalFQDN'))]",
         "deploySqlStandaloneTemplateURL": "[concat(variables('sqlassetLocation'),'/deploySqlStandalone.json')]",
         "publicLBName": "sqllb",
         "publicIPAddressName": "[substring(concat('SQLPIP-', uniquestring(replace(resourceGroup().Id,'-',''))), 0, 8)]",
@@ -545,7 +546,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('updateVNetDNS1ID')]"
+                "[variables('deploySqlClusterVmsID')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -588,11 +589,11 @@
             }
         },
         {
-            "name": "DeployLoadgenrole",
+            "name": "[variables('deployLoadGen')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('updateVNetDNS1ID')]"
+                "[variables('deployWebRole')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -762,7 +763,7 @@
             },
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "DeployLoadgenrole"
+                "[variables('deployLoadGen')]"
             ],
             "properties": {
                 "mode": "Incremental",
