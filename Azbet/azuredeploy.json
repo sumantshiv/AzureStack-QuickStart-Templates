@@ -501,8 +501,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('updateVNetDNS1ID')]",
-                "[variables('deploySqlClusterVmsID')]"
+                "[variables('updateVNetDNS1ID')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -546,7 +545,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('deploySqlClusterVmsID')]"
+                "[variables('updateVNetDNS1ID')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -593,7 +592,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[variables('deployWebRole')]"
+                "[variables('updateVNetDNS1ID')]"
             ],
             "properties": {
                 "mode": "Incremental",
