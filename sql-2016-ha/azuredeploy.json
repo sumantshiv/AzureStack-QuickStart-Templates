@@ -139,14 +139,14 @@
             "metadata": {
                 "description": "Linked Templates base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_disk/sql-2016-ha"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_4/sql-2016-ha"
         },
         "scriptsBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "DSC Scripts base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_disk/sql-2016-ha"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_4/sql-2016-ha"
         },
         "autoPatchingDay": {
             "type": "string",
@@ -889,7 +889,7 @@
                         "value": "[variables('lbSettings').sqlLBName]"
                     },
                     "sqlLBIPAddress": {
-                        "value": "[parameters('sqlLBIPAddress')]"
+                        "value": "[variables('ids').sqllbID.properties.frontendIPConfigurations[0].publicIPAddress.id.ipAddress]"
                     },
                     "adPDCVMName": {
                         "value": "[variables('vmSettings').adPDCVMName]"
