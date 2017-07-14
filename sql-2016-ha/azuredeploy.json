@@ -382,9 +382,6 @@
             "name": "ConfiguringAlwaysOn",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
-            "dependsOn": [
-                "Microsoft.Resources/deployments/PreparingAlwaysOnSqlServer"
-            ],
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -441,7 +438,7 @@
                         "value": "[variables('lbSettings').sqlLBName]"
                     },
                     "sqlLBIPAddress": {
-                        "value": "[reference(variables('ids').sqllbID).properties.frontendIPConfigurations[0].properties.publicIPAddress.properties.ipAddress]"
+                        "value": "[reference(concat('Microsoft.Network/loadBalancers/', variables('lbSettings').sqlLBName)).properties.frontendIPConfigurations[0].properties.publicIPAddress.properties.ipAddress]"
                     },
                     "adPDCVMName": {
                         "value": "[variables('vmSettings').adPDCVMName]"
