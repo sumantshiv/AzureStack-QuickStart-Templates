@@ -379,9 +379,114 @@
     },
     "resources": [
         {
+            "name": "StorageAccountVirtualNetworkPublicIP",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "comments": "This resource will create storage accounts for Active Directory, SQL Server, File Share Witness and Diagnostics. It will also create the Virtual Network and public IP addresses",
+            "dependsOn": [
+                "[variables('nsgID')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('configuration').storageAccountVirtualNetworkPublicIP]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "sqlStorageAccountName": {
+                        "value": "[parameters('sqlStorageAccountName')]"
+                    },
+                    "dcStorageAccountName": {
+                        "value": "[variables('dcStorageAccountName')]"
+                    },
+                    "SqlStorageAccountType": {
+                        "value": "[parameters('sqlStorageAccountType')]"
+                    },
+                    "DcStorageAccountType": {
+                        "value": "[variables('dcStorageAccountType')]"
+                    },
+                    "primaryDCIPAddressNameWithSuffix": {
+                        "value": "[variables('primaryDCIPAddressNameWithSuffix')]"
+                    },
+                    "sql1AddressNameWithSuffix": {
+                        "value": "[variables('sql1AddressNameWithSuffix')]"
+                    },
+                    "sql0AddressNameWithSuffix": {
+                        "value": "[variables('sql0AddressNameWithSuffix')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[variables('virtualNetworkNameWithSuffix')]"
+                    },
+                    "virtualNetworkAddressRange": {
+                        "value": "[parameters('virtualNetworkAddressRange')]"
+                    },
+                    "subnets": {
+                        "value": "[variables('subnets')]"
+                    },
+                    "nsgID": {
+                        "value": "[variables('nsgID')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "LoadBalancers",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "comments": "Create Load Balancers for SQL and DC",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/StorageAccountVirtualNetworkPublicIP"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('configuration').setupLBsUrl]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "sqlLBName": {
+                        "value": "[variables('lbSettings').sqlLBName]"
+                    },
+                    "sqlLBFE": {
+                        "value": "[variables('lbSettings').sqlLBFE]"
+                    },
+                    "sqlLBIPAddress": {
+                        "value": "[parameters('sqlLBIPAddress')]"
+                    },
+                    "staticSubnetRef": {
+                        "value": "[variables('sqlSubnetRef')]"
+                    },
+                    "sqlLBBE": {
+                        "value": "[variables('lbSettings').sqlLBBE]"
+                    },
+                    "sqlLBBEID": {
+                        "value": "[variables('derivedIds').sqlBEAddressPoolID]"
+                    },
+                    "sqllbFEConfigID": {
+                        "value": "[variables('derivedIds').sqllbFEConfigID]"
+                    },
+                    "sqllbProbeID": {
+                        "value": "[variables('derivedIds').sqllbProbeID]"
+                    },
+                    "SQLAOProbe": {
+                        "value": "[variables('SQLAOProbe')]"
+                    }
+                }
+            }
+        },
+        {
             "name": "ConfiguringAlwaysOn",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/LoadBalancers"
+            ],
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
