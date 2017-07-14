@@ -379,6 +379,29 @@
     },
     "resources": [
         {
+            "name": "[variables('nsgName')]",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2015-06-15",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "rule1",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 101,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "name": "StorageAccountVirtualNetworkPublicIP",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
@@ -543,7 +566,7 @@
                         "value": "[variables('lbSettings').sqlLBName]"
                     },
                     "sqlLBIPAddress": {
-                        "value": "[reference(concat('Microsoft.Network/loadBalancers/', variables('lbSettings').sqlLBName)).properties.frontendIPConfigurations[0].properties.publicIPAddress.properties.ipAddress]"
+                        "value": "[reference('LoadBalancers').outputs.result.value.properties.ipAddress]"
                     },
                     "adPDCVMName": {
                         "value": "[variables('vmSettings').adPDCVMName]"
