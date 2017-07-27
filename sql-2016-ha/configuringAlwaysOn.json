@@ -1,71 +1,74 @@
 {  
    "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
    "contentVersion":"1.0.0.0",
-   "parameters":{  
-      "sqlVMName":{  
-         "type":"string"
-      },
-      "location":{  
-         "type":"string"
-      },
-      "adminUsername":{  
-         "type":"string"
-      },
-      "adminPassword":{  
-         "type":"securestring"
-      },
-      "domainName":{  
-         "type":"string"
-      },
-      "sqlAOEPName":{  
-         "type":"string"
-      },
-      "sqlServerServiceAccountUserName":{  
-         "type":"string"
-      },
-      "sqlServerServiceAccountPassword":{  
-         "type":"securestring"
-      },
-      "createClusterModulesURL":{  
-         "type":"string"
-      },
-      "createClusterConfigurationFunction":{  
-         "type":"string"
-      },
-      "clusterName":{  
-         "type":"string"
-      },
-      "sharePath":{  
-         "type":"string"
-      },
-      "sqlAOAGName":{  
-         "type":"string"
-      },
-      "sqlAOListenerName":{  
-         "type":"string"
-      },
-      "sqlAOListenerPort":{  
-         "type":"string"
-      },
-      "sqlLBName":{  
-         "type":"string"
-      },
-      "sqlLBIPAddress":{  
-         "type":"string"
-      },
-      "adPDCVMName":{  
-         "type":"string"
-      },
-      "sqlwVMName":{  
-         "type":"string"
-      },
-      "numberOfDisks":{  
-         "type":"string"
-      },
-      "workloadType":{  
-         "type":"string"
-      }
-   },
+    "parameters": {
+        "sqlVMName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "domainName": {
+            "type": "string"
+        },
+        "infraDNSSuffix": {
+            "type": "string"
+        },
+        "sqlAOEPName": {
+            "type": "string"
+        },
+        "sqlServerServiceAccountUserName": {
+            "type": "string"
+        },
+        "sqlServerServiceAccountPassword": {
+            "type": "securestring"
+        },
+        "createClusterModulesURL": {
+            "type": "string"
+        },
+        "createClusterConfigurationFunction": {
+            "type": "string"
+        },
+        "clusterName": {
+            "type": "string"
+        },
+        "sharePath": {
+            "type": "string"
+        },
+        "sqlAOAGName": {
+            "type": "string"
+        },
+        "sqlAOListenerName": {
+            "type": "string"
+        },
+        "sqlAOListenerPort": {
+            "type": "string"
+        },
+        "sqlLBName": {
+            "type": "string"
+        },
+        "sqlLBIPAddress": {
+            "type": "string"
+        },
+        "adPDCVMName": {
+            "type": "string"
+        },
+        "sqlwVMName": {
+            "type": "string"
+        },
+        "numberOfDisks": {
+            "type": "string"
+        },
+        "workloadType": {
+            "type": "string"
+        }
+    },
    "resources":[  
       {  
          "type":"Microsoft.Compute/virtualMachines/extensions",
@@ -84,10 +87,10 @@
                   "domainName":"[parameters('domainName')]",
                   "clusterName":"[parameters('clusterName')]",
                   "sharePath":"[concat('\\\\',parameters('sqlwVMName'),'\\',parameters('sharePath'))]",
-                  "nodes":[  
-                     "[concat(parameters('sqlVMName'),'0')]",
-                     "[concat(parameters('sqlVMName'),'1')]"
-                  ],
+                "nodes": [
+                    "[concat(parameters('sqlVMName'),'0.', parameters('location'), '.cloudapp.', parameters('infraDNSSuffix'))]",
+                    "[concat(parameters('sqlVMName'),'1.', parameters('location'), '.cloudapp.', parameters('infraDNSSuffix'))]"
+                ],
                   "sqlAlwaysOnEndpointName":"[parameters('sqlAOEPName')]",
                   "sqlAlwaysOnAvailabilityGroupName":"[parameters('sqlAOAGName')]",
                   "sqlAlwaysOnAvailabilityGroupListenerName":"[parameters('sqlAOListenerName')]",

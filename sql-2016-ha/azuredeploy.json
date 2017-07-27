@@ -57,6 +57,13 @@
             },
             "defaultValue": "contoso.local"
         },
+        "infraDNSSuffix": {
+            "type": "string",
+            "metadata": {
+                "description": "The DNS suffix for the infra DNS zone."
+            },
+            "defaultValue": "azurestack.external"
+        },
         "sqlServerServiceAccountUserName": {
             "type": "string",
             "metadata": {
@@ -135,14 +142,14 @@
             "metadata": {
                 "description": "Linked Templates base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_stage_publicfsw/sql-2016-ha"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_stage_sriTest/sql-2016-ha"
         },
         "scriptsBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "DSC Scripts base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_stage_publicfsw/sql-2016-ha"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/sqlImprov_stage_sriTest/sql-2016-ha"
         },
         "autoPatchingDay": {
             "type": "string",
@@ -865,6 +872,9 @@
                     },
                     "domainName": {
                         "value": "[parameters('domainName')]"
+                    },
+                    "infraDNSSuffix": {
+                        "value": "[parameters('infraDNSSuffix')]"
                     },
                     "sqlAOEPName": {
                         "value": "[variables('sqlAOEPName')]"
