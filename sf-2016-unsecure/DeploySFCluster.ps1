@@ -1,18 +1,19 @@
 ﻿param
 (
-    [String] $DeploymentNode
+    [String] $DeploymentNodeIndex
 )
 
 Function DeployServiceFabric
 {
+    $scaleSetIndex = $env:COMPUTERNAME.Substring($env:COMPUTERNAME.Length-1, 1)
 
-    if($env:COMPUTERNAME -eq $DeploymentNode)
+    if($scaleSetIndex -eq $DeploymentNodeIndex)
     {
-        $message = "I am the deployment node $DeploymentNode."
+        $message = "I am the deployment node $env:COMPUTERNAME."
     }
     else
     {
-        $message = "I am not the deployment node. It should be $DeploymentNode"
+        $message = "I am not the deployment node."
     }
 
     $message > "c:\ScriptOutput.txt"
