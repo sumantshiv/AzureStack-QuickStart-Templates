@@ -105,9 +105,9 @@
         "location": "[resourceGroup().location]",
         "sfClusterDeploymentScriptName": "DeploySFCluster.ps1",
         "sfClusterDeploymentScriptUrl": "[concat(parameters('scriptBaseUrl'), '/', variables('sfClusterDeploymentScriptName'))]",
-        "deploymentNode": "[concat(parameters('vmScaleSetName'), '_0')]",
-        "deploymentNodeParam": "[concat(' -DeploymentNode ', variables('deploymentNode') )]",
-        "commandParam": "[concat(variables('deploymentNodeParam'))]"
+        "deploymentNodeIndex": "0",
+        "deploymentNodeIndexParam": "[concat(' -DeploymentNodeIndex ', variables('deploymentNodeIndex') )]",
+        "commandParam": "[concat(variables('deploymentNodeIndexParam'))]"
     },
     "resources": [
         {
