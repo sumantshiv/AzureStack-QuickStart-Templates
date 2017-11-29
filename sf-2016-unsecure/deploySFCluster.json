@@ -87,6 +87,13 @@
         },
         "subnetID": {
             "type": "string"
+        },
+        "scriptBaseUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Scripts base url"
+            },
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab/sf-2016-unsecure"
         }
     },
     "variables": {
@@ -95,7 +102,12 @@
             "vmssApiVersion": "2016-03-30"
         },
 
-        "location": "[resourceGroup().location]"
+        "location": "[resourceGroup().location]",
+        "sfClusterDeploymentScriptName": "DeploySFCluster.ps1",
+        "sfClusterDeploymentScriptUrl": "[concat(parameters('scriptBaseUrl'), '/', variables('sfClusterDeploymentScriptName'))]",
+        "deploymentNode": "[concat(parameters('vmScaleSetName'), '_0')]",
+        "deploymentNodeParam": "[concat(' -DeploymentNode ', variables('deploymentNode') )]",
+        "commandParam": "[concat(variables('deploymentNodeParam'))]"
     },
     "resources": [
         {
@@ -160,6 +172,27 @@
                                 "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, parameters('vhdContainerName'))]"
                             ]
                         }
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "DeployServiceFabricCluster",
+                                "properties": {
+                                    "publisher": "Microsoft.Compute",
+                                    "settings": {
+                                        "fileUris": [
+                                            "[variables('sfClusterDeploymentScriptUrl')]"
+                                        ]
+                                    },
+                                    "typeHandlerVersion": "1.8",
+                                    "autoUpgradeMinorVersion": true,
+                                    "protectedSettings": {
+                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('sfClusterDeploymentScriptName'), variables('commandParam'))]"
+                                    },
+                                    "type": "CustomScriptExtension"
+                                }
+                            }
+                        ]
                     }
                 }
             },
@@ -170,7 +203,7 @@
             "tags": {
                 "resourceType": "Service Fabric",
                 "clusterName": "[parameters('clusterName')]",
-                "displayName": "VMScaleSet"
+                "displayName": "ServiceFabricCluster"
             }
         }
     ],

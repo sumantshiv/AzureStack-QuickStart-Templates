@@ -78,6 +78,13 @@
                 "description": "Linked Templates base url"
             },
             "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab/sf-2016-unsecure"
+        },
+        "scriptBaseUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Scripts base url"
+            },
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab/sf-2016-unsecure"
         }
     },
     "variables": {
@@ -375,7 +382,6 @@
             "apiVersion": "[variables('apiVersion').templateDeploymentApiVersion]",
             "name": "DeployServiceFabric",
             "type": "Microsoft.Resources/deployments",
-            "location": "[variables('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('imageConfig').vmssUniqueName)]"
             ],
@@ -445,6 +451,9 @@
                     },
                     "subnetID": {
                         "value": "[variables('derivedIds').subnetID]"
+                    },
+                    "scriptBaseUrl": {
+                        "value": "[parameters('scriptBaseUrl')]"
                     }
                 }
             }
