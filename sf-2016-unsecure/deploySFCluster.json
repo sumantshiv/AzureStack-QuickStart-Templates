@@ -27,7 +27,7 @@
             "maxLength": 9
         },
         "overProvision": {
-            "type": "bool"
+            "type": "string"
         },
         "vmImageSku": {
             "type": "string",
