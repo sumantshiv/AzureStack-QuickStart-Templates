@@ -1,0 +1,455 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "string",
+            "defaultValue": "Cluster",
+            "metadata": {
+                "description": "Name of your cluster - Between 3 and 23 characters. Letters and numbers only"
+            }
+        },
+        "instanceCount": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of VM instances (100 or less)"
+            },
+            "defaultValue": 3,
+            "minValue": 1,
+            "maxValue": 5
+        },
+        "vmNodeTypeName": {
+            "type": "string",
+            "defaultValue": "Type01",
+            "maxLength": 9
+        },
+        "vmImageSku": {
+            "type": "string",
+            "defaultValue": "2016-Datacenter",
+            "allowedValues": [
+                "2016-Datacenter"
+            ]
+        },
+        "vmNodeSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_D2_v2"
+            ],
+            "defaultValue": "Standard_D2_v2"
+        },
+        "adminUserName": {
+            "type": "string",
+            "defaultValue": "vmadmin",
+            "metadata": {
+                "description": "Remote desktop user Id"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Remote desktop user password. Must be a strong password"
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS"
+            ],
+            "defaultValue": "Standard_LRS",
+            "metadata": {
+                "description": "Replication option for the VM image storage account"
+            }
+        },
+        "dnsName": {
+            "type": "string"
+        },
+        "addressPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/16"
+        },
+        "subnetPrefix": {
+            "type": "string",
+            "defaultValue": "10.0.0.0/24"
+        },
+        "templatesBaseUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Linked Templates base url"
+            },
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab/sf-2016-unsecure"
+        }
+    },
+    "variables": {
+
+        "apiVersion": {
+            "vmssApiVersion": "2016-03-30",
+            "lbApiVersion": "2015-06-15",
+            "vNetApiVersion": "2015-06-15",
+            "storageApiVersion": "2016-01-01",
+            "publicIPApiVersion": "2015-06-15",
+            "templateDeploymentApiVersion": "2015-01-01"
+        },
+
+        "location": "[resourceGroup().location]",
+        "uniquePrefix": "[uniqueString(resourceGroup().id)]",
+        "virtualNetworkName": "[concat(variables('uniquePrefix'), 'vnet')]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+        "nicName": "[concat(variables('uniquePrefix'), 'nic')]",
+        "ipConfigName": "[concat(variables('uniquePrefix'), 'ipconfig')]",
+        "lbName": "[concat(variables('uniquePrefix'), 'lb')]",
+        "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]",
+        "lbIPName": "[concat(variables('uniquePrefix'), 'pip')]",
+        "lbPublicIPID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbIPName'))]",
+        "subnetName": "[concat(variables('uniquePrefix'), 'subnet')]",
+        "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
+        "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
+
+        "servicefabricTcpGatewayPort": 19000,
+        "servicefabricHttpGatewayPort": 19080,
+        "servicereverseProxyEndpointPort": 19081,
+
+        "imageConfig": {
+            "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",
+            "vmImagePublisher": "MicrosoftWindowsServer",
+            "vmImageOffer": "WindowsServer",
+            "vmImageVersion": "latest",
+            "vhdContainerName": "[concat(variables('uniquePrefix'), 'vhd')]",
+            "osDiskName": "[concat(variables('uniquePrefix'), 'osdisk')]",
+            "overProvision": "false",
+            "storageAccountName": "[toLower(concat('SA', uniqueString(resourceGroup().id)))]"
+        },
+
+        "derivedIds": {
+            "subnetID": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+            "lbIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerIPConfig')]",
+            "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/', variables('bePoolName'))]",
+            "lbNatPoolID": "[concat(variables('lbID'),'/inboundNatPools/', variables('natPoolName'))]",
+            "lbGatewayProbeID": "[concat(variables('lbID'),'/probes/FabricGatewayProbe')]",
+            "lbHttpProbeID": "[concat(variables('lbID'),'/probes/FabricHttpGatewayProbe')]"
+        },
+
+        "sfDeploymentTemplateURL": "[concat(parameters('templatesBaseUrl'),'/deploySFCluster.json')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('imageConfig').storageAccountName]",
+            "apiVersion": "[variables('apiVersion').storageApiVersion]",
+            "location": "[variables('location')]",
+            "properties": {
+                "accountType": "[parameters('storageAccountType')]"
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').vNetApiVersion]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnetPrefix')]"
+                        }
+                    }
+                ]
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]",
+                "displayName": "VirtualNetwork"
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').publicIPApiVersion]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('lbIPName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('vnetID')]"
+            ],
+            "properties": {
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('dnsName')]"
+                },
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]",
+                "displayName": "PublicIP"
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').lbApiVersion]",
+            "type": "Microsoft.Network/loadBalancers",
+            "name": "[variables('lbName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('lbPublicIPID')]"
+            ],
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerIPConfig",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[variables('lbPublicIPID')]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('bePoolName')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "ClientConnectionEndpoint",
+                        "properties": {
+                            "backendAddressPool": {
+                                "id": "[variables('derivedIds').lbPoolID]"
+                            },
+                            "backendPort": "[variables('servicefabricTcpGatewayPort')]",
+                            "enableFloatingIP": false,
+                            "frontendIPConfiguration": {
+                                "id": "[variables('derivedIds').lbIPConfigID]"
+                            },
+                            "frontendPort": "[variables('servicefabricTcpGatewayPort')]",
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                                "id": "[variables('derivedIds').lbGatewayProbeID]"
+                            },
+                            "protocol": "Tcp"
+                        }
+                    },
+                    {
+                        "name": "ServiceFabricExplorer",
+                        "properties": {
+                            "backendAddressPool": {
+                                "id": "[variables('derivedIds').lbPoolID]"
+                            },
+                            "backendPort": "[variables('servicefabricHttpGatewayPort')]",
+                            "enableFloatingIP": false,
+                            "frontendIPConfiguration": {
+                                "id": "[variables('derivedIds').lbIPConfigID]"
+                            },
+                            "frontendPort": "[variables('servicefabricHttpGatewayPort')]",
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                                "id": "[variables('derivedIds').lbHttpProbeID]"
+                            },
+                            "protocol": "Tcp"
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "FabricGatewayProbe",
+                        "properties": {
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2,
+                            "port": "[variables('servicefabricTcpGatewayPort')]",
+                            "protocol": "Tcp"
+                        }
+                    },
+                    {
+                        "name": "FabricHttpGatewayProbe",
+                        "properties": {
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2,
+                            "port": "[variables('servicefabricHttpGatewayPort')]",
+                            "protocol": "Tcp"
+                        }
+                    }
+                ],
+                "inboundNatPools": [
+                    {
+                        "name": "[variables('natPoolName')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('derivedIds').lbIPConfigID]"
+                            },
+                            "frontendPortRangeStart": 50000,
+                            "frontendPortRangeEnd": 50099,
+                            "backendPort": 3389,
+                            "protocol": "Tcp"
+                        }
+                    }
+                ]
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]",
+                "displayName": "LoadBalancer"
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').vmssApiVersion]",
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "name": "[variables('imageConfig').vmssUniqueName]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('lbID')]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('imageConfig').storageAccountName)]"
+            ],
+            "properties": {
+                "overprovision": "[variables('imageConfig').overProvision]",
+                "upgradePolicy": {
+                    "mode": "Automatic"
+                },
+                "virtualMachineProfile": {
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[variables('nicName')]",
+                                "properties": {
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "[variables('ipConfigName')]",
+                                            "properties": {
+                                                "loadBalancerBackendAddressPools": [
+                                                    {
+                                                        "id": "[variables('derivedIds').lbPoolID]"
+                                                    }
+                                                ],
+                                                "loadBalancerInboundNatPools": [
+                                                    {
+                                                        "id": "[variables('derivedIds').lbNatPoolID]"
+                                                    }
+                                                ],
+                                                "subnet": {
+                                                    "id": "[variables('derivedIds').subnetID]"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "primary": true
+                                }
+                            }
+                        ]
+                    },
+                    "osProfile": {
+                        "adminPassword": "[parameters('adminPassword')]",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "computernamePrefix": "[parameters('vmNodeTypeName')]"
+                    },
+                    "storageProfile": {
+                        "imageReference": {
+                            "publisher": "[variables('imageConfig').vmImagePublisher]",
+                            "offer": "[variables('imageConfig').vmImageOffer]",
+                            "sku": "[parameters('vmImageSku')]",
+                            "version": "[variables('imageConfig').vmImageVersion]"
+                        },
+                        "osDisk": {
+                            "name": "[variables('imageConfig').osDiskName]",
+                            "caching": "ReadOnly",
+                            "createOption": "FromImage",
+                            "vhdContainers": [
+                                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('imageConfig').storageAccountName), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('imageConfig').vhdContainerName)]"
+                            ]
+                        }
+                    }
+                }
+            },
+            "sku": {
+                "name": "[parameters('vmNodeSize')]",
+                "capacity": "[parameters('instanceCount')]"
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]",
+                "displayName": "VMScaleSet"
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').templateDeploymentApiVersion]",
+            "name": "DeployServiceFabric",
+            "type": "Microsoft.Resources/deployments",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('imageConfig').vmssUniqueName)]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('sfDeploymentTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "clusterName": {
+                        "value": "parameters('clusterName')]"
+                    },
+                    "vmScaleSetName": {
+                        "value": "[variables('imageConfig').vmssUniqueName]"
+                    },
+                    "instanceCount": {
+                        "value": "[parameters('instanceCount')]"
+                    },
+                    "vmNodeTypeName": {
+                        "value": "[parameters('vmNodeTypeName')]"
+                    },
+                    "overProvision": {
+                        "value": "[variables('imageConfig').overProvision]"
+                    },
+                    "vmImageSku": {
+                        "value": "[parameters('vmImageSku')]"
+                    },
+                    "vmImagePublisher": {
+                        "value": "[variables('imageConfig').vmImagePublisher]"
+                    },
+                    "vmImageOffer": {
+                        "value": "[variables('imageConfig').vmImageOffer]"
+                    },
+                    "vmImageVersion": {
+                        "value": "[variables('imageConfig').vmImageVersion]"
+                    },
+                    "vmNodeSize": {
+                        "value": "[parameters('vmNodeSize')]"
+                    },
+                    "osDiskName": {
+                        "value": "[variables('imageConfig').osDiskName]"
+                    },
+                    "vhdContainerName": {
+                        "value": "[variables('imageConfig').vhdContainerName]"
+                    },
+                    "storageAccountName": {
+                        "value": "[variables('imageConfig').storageAccountName]"
+                    },
+                    "adminUserName": {
+                        "value": "[parameters('adminUserName')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "nicName": {
+                        "value": "[variables('nicName')]"
+                    },
+                    "ipConfigName": {
+                        "value": "[variables('ipConfigName')]"
+                    },
+                    "lbPoolID": {
+                        "value": "[variables('derivedIds').lbPoolID]"
+                    },
+                    "lbNatPoolID": {
+                        "value": "[variables('derivedIds').lbNatPoolID]"
+                    },
+                    "subnetID": {
+                        "value": "[variables('derivedIds').subnetID]"
+                    }
+                }
+            }
+        }
+    ],
+        "outputs": {
+        }
+    }
