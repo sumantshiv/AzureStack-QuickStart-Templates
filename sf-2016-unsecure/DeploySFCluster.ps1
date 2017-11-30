@@ -139,8 +139,8 @@
                 New-Item -Path $smbShareLocalPath -ItemType Directory -Force
                 New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess $($Using:Credential).GetNetworkCredential().UserName
 
-                Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
-                $configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
+                #Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
+                #$configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
 
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
