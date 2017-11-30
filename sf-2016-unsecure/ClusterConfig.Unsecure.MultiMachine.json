@@ -26,37 +26,44 @@
       }
     ],
     "properties": {
+        "diagnosticsStore": {
+            "metadata": "Please replace the diagnostics file share with an actual file share accessible from all cluster machines. For example, \\\\machine1\\DiagnosticsStore.",
+            "dataDeletionAgeInDays": "7",
+            "storeType": "FileShare",
+            "connectionstring": "\\\\machine1\\DiagnosticsStore"
+        },
         "nodeTypes": [
-          {
-            "name": "NodeType0",
-            "clientConnectionEndpointPort": "19000",
-            "clusterConnectionEndpointPort": "19001",
-            "leaseDriverEndpointPort": "19002",
-            "serviceConnectionEndpointPort": "19003",
-            "httpGatewayEndpointPort": "19080",
-            "reverseProxyEndpointPort": "19081",
-            "applicationPorts": {
-                "startPort": "20001",
-                "endPort": "20031"
-            },
-            "isPrimary": true
-          }
-      ],
-      "fabricSettings": [
-        {
-          "name": "Setup",
-          "parameters": [
             {
-                "name": "FabricDataRoot",
-                "value": "C:\\ProgramData\\SF"
-            },
-            {
-                "name": "FabricLogRoot",
-                "value": "C:\\ProgramData\\SF\\Log"
+                "name": "NodeType0",
+                "clientConnectionEndpointPort": "19000",
+                "clusterConnectionEndpointPort": "19001",
+                "leaseDriverEndpointPort": "19002",
+                "serviceConnectionEndpointPort": "19003",
+                "httpGatewayEndpointPort": "19080",
+                "reverseProxyEndpointPort": "19081",
+                "applicationPorts": {
+                    "startPort": "20001",
+                    "endPort": "20031"
+                },
+                "isPrimary": true
             }
-          ]
-        }
-      ]
+        ],
+        "fabricSettings": [
+            {
+                "name": "Setup",
+                "parameters": [
+                    {
+                        "name": "FabricDataRoot",
+                        "value": "C:\\ProgramData\\SF"
+                    },
+                    {
+                        "name": "FabricLogRoot",
+                        "value": "C:\\ProgramData\\SF\\Log"
+                    }
+                ]
+            }
+        ]
     }
 }
+
 

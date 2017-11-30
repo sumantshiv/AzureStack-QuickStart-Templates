@@ -57,11 +57,11 @@
                 # Return in case the current node is not the deployment node, else continue with SF deployment.
                 if($scaleSetIndex -ne $using:DeploymentNodeIndex)
                 {
-                    Write-Verbose "Service Fabric deployment runs on Node with index: $using:DeploymentNodeIndex."
+                    Write-Verbose "Service Fabric deployment runs on Node with index: '$using:DeploymentNodeIndex'."
                     return
                 }
 
-                Write-Verbose "Starting service fabric deployment on Node: $env:COMPUTERNAME."
+                Write-Verbose "Starting service fabric deployment on Node: '$env:COMPUTERNAME'."
 
                 $setupDir = "C:\SFSetup"
 				New-Item -Path $setupDir -ItemType Directory -Force
@@ -70,7 +70,7 @@
 
                 $CofigFilePath = Join-Path -Path $setupDir -ChildPath 'ClusterConfig.json'
                 
-                Write-Verbose "Get Service fabric configuration from $using:ConfigPath"
+                Write-Verbose "Get Service fabric configuration from '$using:ConfigPath'"
 				$request = Invoke-WebRequest $using:ConfigPath -UseBasicParsing
 				$configContent = ConvertFrom-Json  $request.Content
 
@@ -79,7 +79,7 @@
                 $startNodeIpAddressLable = (Get-NetIPAddress).IPv4Address | ? {$_ -ne "" -and $_ -ne "127.0.0.1"}
                 $startNodeIpAddress = [IPAddress](([String]$startNodeIpAddressLable).Trim(' '))                
 
-                Write-Verbose "Start node IPAddress: $startNodeIpAddress"
+                Write-Verbose "Start node IPAddress: '$startNodeIpAddress'"
 
 				$i = 0
 				$sfnodes = @()
@@ -100,14 +100,14 @@
                     $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
                     $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$i"
 
-                    Write-Verbose "Adding Node to configuration: $nodeName"
+                    Write-Verbose "Adding Node to configuration: '$nodeName'"
 					$sfnodes += $node
 					$i++
 				}
 
 				$configContent.nodes = $sfnodes
 
-                Write-Verbose "Creating node type $Using:vmNodeTypeName"
+                Write-Verbose "Creating node type '$Using:vmNodeTypeName'"
                 $nodeTypes =@()
                 
                 $nodeType = New-Object PSObject
@@ -127,21 +127,32 @@
 
                 $nodeType | Add-Member -MemberType NoteProperty -Name "isPrimary" -Value $true
 
-                Write-Verbose "Adding Node Type to configuration: $Using:vmNodeTypeName"
+                Write-Verbose "Adding Node Type to configuration: '$Using:vmNodeTypeName'"
                 $nodeTypes += $nodeType
                 $configContent.properties.nodeTypes = $nodeTypes
+                                
+                $smbShareLocalPath = "C:\DiagnosticsStore"
+                $smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
 
+                Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
+
+                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess $Credential.GetNetworkCredential().UserName
+
+                Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
+                $configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
 
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
-                Write-Verbose "Creating service fabric config file at: $CofigFilePath"
+                Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
 				$configContent | Out-File $CofigFilePath
 
-                
+                Write-Verbose "Downloading Service Fabric runtime from: '$serviceFabricUrl'"
 				Invoke-WebRequest -Uri $serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
-
+                
+                Write-Verbose "Starting Service Fabric runtime deployment"
 				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA
+                Write-Verbose "Service Fabric runtime deployment completed."
             }
 
             TestScript = {
