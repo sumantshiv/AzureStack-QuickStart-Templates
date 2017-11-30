@@ -214,9 +214,11 @@
                                         }
                                     },
                                     "protectedSettings": {
-                                        "Credential": {
-                                            "Username": "[parameters('adminUsername')]",
-                                            "Password": "[parameters('adminPassword')]"
+                                        "properties": {
+                                            "Credential": {
+                                                "Username": "[parameters('adminUsername')]",
+                                                "Password": "[parameters('adminPassword')]"
+                                            }
                                         }
                                     }
                                 }

@@ -111,6 +111,7 @@
         "subnetName": "[concat(variables('uniquePrefix'), 'subnet')]",
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
+        "dnsLable": "toLower(parameters('dnsName'))",
 
         "servicefabricTcpGatewayPort": 19000,
         "servicefabricHttpGatewayPort": 19080,
@@ -187,7 +188,7 @@
             ],
             "properties": {
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('dnsName')]"
+                    "domainNameLabel": "[variables('dnsLable')]"
                 },
                 "publicIPAllocationMethod": "Dynamic"
             },
@@ -453,6 +454,21 @@
                     },
                     "subnetID": {
                         "value": "[variables('derivedIds').subnetID]"
+                    },
+                    "servicefabricTcpGatewayPort": {
+                        "value": "[variables('servicefabricTcpGatewayPort')]"
+                    },
+                    "servicefabricHttpGatewayPort": {
+                        "value": "[variables('servicefabricHttpGatewayPort')]"
+                    },
+                    "servicereverseProxyEndpointPort": {
+                        "value": "[variables('servicereverseProxyEndpointPort')]"
+                    },
+                    "applicationStartPort": {
+                        "value": "[variables('applicationStartPort')]"
+                    },
+                    "applicationEndPort": {
+                        "value": "[variables('applicationEndPort')]"
                     },
                     "scriptBaseUrl": {
                         "value": "[parameters('scriptBaseUrl')]"
