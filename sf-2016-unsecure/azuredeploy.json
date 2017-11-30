@@ -111,7 +111,7 @@
         "subnetName": "[concat(variables('uniquePrefix'), 'subnet')]",
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
-        "dnsLable": "toLower(parameters('dnsName'))",
+        "dnsLable": "[tolower(parameters('dnsName'))]",
 
         "servicefabricTcpGatewayPort": 19000,
         "servicefabricHttpGatewayPort": 19080,
