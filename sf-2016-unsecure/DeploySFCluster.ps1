@@ -136,7 +136,8 @@
 
                 Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
 
-                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess $Credential.GetNetworkCredential().UserName
+                New-Item -Path $smbShareLocalPath -ItemType Directory -Force
+                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess $($Using:Credential).GetNetworkCredential().UserName
 
                 Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
                 $configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
