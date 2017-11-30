@@ -115,6 +115,8 @@
         "servicefabricTcpGatewayPort": 19000,
         "servicefabricHttpGatewayPort": 19080,
         "servicereverseProxyEndpointPort": 19081,
+        "applicationStartPort": 20001,
+        "applicationEndPort": 20031,
 
         "imageConfig": {
             "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",

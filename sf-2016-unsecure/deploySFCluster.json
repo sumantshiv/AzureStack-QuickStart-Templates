@@ -88,6 +88,21 @@
         "subnetID": {
             "type": "string"
         },
+        "servicefabricTcpGatewayPort": {
+            "type": "int"
+        },
+        "servicefabricHttpGatewayPort": {
+            "type": "int"
+        },
+        "servicereverseProxyEndpointPort": {
+            "type": "int"
+        },
+        "applicationStartPort": {
+            "type": "int"
+        },
+        "applicationEndPort": {
+            "type": "int"
+        },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
@@ -103,11 +118,11 @@
         },
 
         "location": "[resourceGroup().location]",
-        "sfClusterDeploymentScriptName": "DeploySFCluster.ps1",
-        "sfClusterDeploymentScriptUrl": "[concat(parameters('scriptBaseUrl'), '/', variables('sfClusterDeploymentScriptName'))]",
-        "deploymentNodeIndex": "0",
-        "deploymentNodeIndexParam": "[concat(' -DeploymentNodeIndex ', variables('deploymentNodeIndex') )]",
-        "commandParam": "[concat(variables('deploymentNodeIndexParam'))]"
+        "serviceFabricDeploymentModuleUrl": "[concat(parameters('scriptBaseUrl'), '/DeploySFCluster.zip')]",
+        "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
+        "serviceFabricConfigPath": "[concat(parameters('scriptBaseUrl'), '/ClusterConfig.Unsecure.MultiMachine.json')]",
+
+        "deploymentNodeIndex": "0"
     },
     "resources": [
         {
@@ -178,18 +193,32 @@
                             {
                                 "name": "DeployServiceFabricCluster",
                                 "properties": {
-                                    "publisher": "Microsoft.Compute",
-                                    "settings": {
-                                        "fileUris": [
-                                            "[variables('sfClusterDeploymentScriptUrl')]"
-                                        ]
-                                    },
-                                    "typeHandlerVersion": "1.8",
+                                    "publisher": "Microsoft.Powershell",
+                                    "type": "DSC",
+                                    "typeHandlerVersion": "2.19",
                                     "autoUpgradeMinorVersion": true,
-                                    "protectedSettings": {
-                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('sfClusterDeploymentScriptName'), variables('commandParam'))]"
+                                    "settings": {
+                                        "modulesUrl": "[variables('serviceFabricDeploymentModuleUrl')]",
+                                        "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
+                                        "properties": {
+                                            "DeploymentNodeIndex": "[variables('deploymentNodeIndex')]",
+                                            "InstanceCount": "[parameters('InstanceCount')]",
+                                            "ClusterName": "[parameters('clusterName')]",
+                                            "vmNodeTypeName": "[parameters('vmNodeTypeName')]",
+                                            "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
+                                            "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
+                                            "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
+                                            "applicationStartPort": "[parameters('applicationStartPort')]",
+                                            "applicationEndPort": "[parameters('applicationEndPort')]",
+                                            "ConfigPath": "[variables('serviceFabricConfigPath')]"
+                                        }
                                     },
-                                    "type": "CustomScriptExtension"
+                                    "protectedSettings": {
+                                        "Credential": {
+                                            "Username": "[parameters('adminUsername')]",
+                                            "Password": "[parameters('adminPassword')]"
+                                        }
+                                    }
                                 }
                             }
                         ]
