@@ -72,6 +72,26 @@
             "type": "string",
             "defaultValue": "10.0.0.0/24"
         },
+        "servicefabricTcpGatewayPort": {
+            "type": "int",
+            "defaultValue": 19000
+        },
+        "servicefabricHttpGatewayPort": {
+            "type": "int",
+            "defaultValue": 19080
+        },
+        "servicereverseProxyEndpointPort": {
+            "type": "int",
+            "defaultValue": 19081
+        },
+        "applicationStartPort": {
+            "type": "int",
+            "defaultValue": 20001
+        },
+        "applicationEndPort": {
+            "type": "int",
+            "defaultValue": 20031
+        },
         "templatesBaseUrl": {
             "type": "string",
             "metadata": {
@@ -112,12 +132,6 @@
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
         "dnsLable": "[tolower(parameters('dnsName'))]",
-
-        "servicefabricTcpGatewayPort": 19000,
-        "servicefabricHttpGatewayPort": 19080,
-        "servicereverseProxyEndpointPort": 19081,
-        "applicationStartPort": 20001,
-        "applicationEndPort": 20031,
 
         "imageConfig": {
             "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",
@@ -229,12 +243,12 @@
                             "backendAddressPool": {
                                 "id": "[variables('derivedIds').lbPoolID]"
                             },
-                            "backendPort": "[variables('servicefabricTcpGatewayPort')]",
+                            "backendPort": "[parameters('servicefabricTcpGatewayPort')]",
                             "enableFloatingIP": false,
                             "frontendIPConfiguration": {
                                 "id": "[variables('derivedIds').lbIPConfigID]"
                             },
-                            "frontendPort": "[variables('servicefabricTcpGatewayPort')]",
+                            "frontendPort": "[parameters('servicefabricTcpGatewayPort')]",
                             "idleTimeoutInMinutes": 5,
                             "probe": {
                                 "id": "[variables('derivedIds').lbGatewayProbeID]"
@@ -248,12 +262,12 @@
                             "backendAddressPool": {
                                 "id": "[variables('derivedIds').lbPoolID]"
                             },
-                            "backendPort": "[variables('servicefabricHttpGatewayPort')]",
+                            "backendPort": "[parameters('servicefabricHttpGatewayPort')]",
                             "enableFloatingIP": false,
                             "frontendIPConfiguration": {
                                 "id": "[variables('derivedIds').lbIPConfigID]"
                             },
-                            "frontendPort": "[variables('servicefabricHttpGatewayPort')]",
+                            "frontendPort": "[parameters('servicefabricHttpGatewayPort')]",
                             "idleTimeoutInMinutes": 5,
                             "probe": {
                                 "id": "[variables('derivedIds').lbHttpProbeID]"
@@ -268,7 +282,7 @@
                         "properties": {
                             "intervalInSeconds": 5,
                             "numberOfProbes": 2,
-                            "port": "[variables('servicefabricTcpGatewayPort')]",
+                            "port": "[parameters('servicefabricTcpGatewayPort')]",
                             "protocol": "Tcp"
                         }
                     },
@@ -277,7 +291,7 @@
                         "properties": {
                             "intervalInSeconds": 5,
                             "numberOfProbes": 2,
-                            "port": "[variables('servicefabricHttpGatewayPort')]",
+                            "port": "[parameters('servicefabricHttpGatewayPort')]",
                             "protocol": "Tcp"
                         }
                     }
@@ -456,19 +470,19 @@
                         "value": "[variables('derivedIds').subnetID]"
                     },
                     "servicefabricTcpGatewayPort": {
-                        "value": "[variables('servicefabricTcpGatewayPort')]"
+                        "value": "[parameters('servicefabricTcpGatewayPort')]"
                     },
                     "servicefabricHttpGatewayPort": {
-                        "value": "[variables('servicefabricHttpGatewayPort')]"
+                        "value": "[parameters('servicefabricHttpGatewayPort')]"
                     },
                     "servicereverseProxyEndpointPort": {
-                        "value": "[variables('servicereverseProxyEndpointPort')]"
+                        "value": "[parameters('servicereverseProxyEndpointPort')]"
                     },
                     "applicationStartPort": {
-                        "value": "[variables('applicationStartPort')]"
+                        "value": "[parameters('applicationStartPort')]"
                     },
                     "applicationEndPort": {
-                        "value": "[variables('applicationEndPort')]"
+                        "value": "[parameters('applicationEndPort')]"
                     },
                     "scriptBaseUrl": {
                         "value": "[parameters('scriptBaseUrl')]"
