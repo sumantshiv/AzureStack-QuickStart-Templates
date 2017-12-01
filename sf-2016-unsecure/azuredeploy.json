@@ -12,7 +12,7 @@
         "instanceCount": {
             "type": "int",
             "metadata": {
-                "description": "Number of VM instances (100 or less)"
+                "description": "Number of VM instances (5 or less)"
             },
             "defaultValue": 3,
             "minValue": 1,
