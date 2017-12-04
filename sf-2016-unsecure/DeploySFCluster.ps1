@@ -33,7 +33,13 @@
     [string] $ConfigPath,
 
     [Parameter(Mandatory = $true)]
-    [PSCredential] $Credential
+    [PSCredential] $Credential,
+
+    [Parameter(Mandatory = $true)]
+    [PSCredential] $DiagStoreAccountName,
+
+    [Parameter(Mandatory = $true)]
+    [PSCredential] $DiagStoreAccountKey
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -136,11 +142,10 @@
 
                 Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
 
-                New-Item -Path $smbShareLocalPath -ItemType Directory -Force
-                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath
+                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$DiagStoreAccountName;AccountKey=$DiagStoreAccountKey"
 
-                #Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
-                #$configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
+                Write-Verbose "Setting diagnostics store to: '$diagStoreConnectinString'"
+                $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
 
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent

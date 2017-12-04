@@ -210,7 +210,9 @@
                                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
                                             "applicationStartPort": "[parameters('applicationStartPort')]",
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
-                                            "ConfigPath": "[variables('serviceFabricConfigPath')]"
+                                            "ConfigPath": "[variables('serviceFabricConfigPath')]",
+                                            "DiagStoreAccountName": "[parameters('storageAccountName')]",
+                                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
                                         }
                                     },
                                     "protectedSettings": {
