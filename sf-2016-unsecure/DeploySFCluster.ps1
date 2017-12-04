@@ -140,7 +140,7 @@
                 $smbShareLocalPath = "C:\DiagnosticsStore"
                 $smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
 
-                Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
+                Write-Verbose "Creating diagnostics share at: '$DiagStoreAccountName' blob store"
 
                 $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$DiagStoreAccountName;AccountKey=$DiagStoreAccountKey"
 
