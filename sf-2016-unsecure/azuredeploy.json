@@ -132,6 +132,7 @@
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
         "dnsLable": "[tolower(parameters('dnsName'))]",
+        "diagStoreAccountName": "[toLower(concat('diagSA', uniqueString(resourceGroup().id)))]",
 
         "imageConfig": {
             "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",
@@ -163,6 +164,15 @@
             "location": "[variables('location')]",
             "properties": {
                 "accountType": "[parameters('storageAccountType')]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('diagStoreAccountName')]",
+            "apiVersion": "[variables('apiVersion').storageApiVersion]",
+            "location": "[variables('location')]",
+            "properties": {
+                "accountType": "[parameters('diagStoreAccountName')]"
             }
         },
         {
@@ -400,7 +410,8 @@
             "name": "DeployServiceFabric",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('imageConfig').vmssUniqueName)]"
+                "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('imageConfig').vmssUniqueName)]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName'))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -447,6 +458,9 @@
                     },
                     "storageAccountName": {
                         "value": "[variables('imageConfig').storageAccountName]"
+                    },
+                    "diagStoreAccountName": {
+                        "value": "[variables('diagStoreAccountName')]"
                     },
                     "adminUserName": {
                         "value": "[parameters('adminUserName')]"

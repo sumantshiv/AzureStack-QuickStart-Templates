@@ -60,6 +60,9 @@
         "storageAccountName": {
             "type": "string"
         },
+        "diagStoreAccountName": {
+            "type": "string"
+        },
         "adminUserName": {
             "type": "string",
             "defaultValue": "vmadmin",
@@ -211,8 +214,8 @@
                                             "applicationStartPort": "[parameters('applicationStartPort')]",
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
-                                            "DiagStoreAccountName": "[parameters('storageAccountName')]",
-                                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+                                            "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
+                                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
                                         }
                                     },
                                     "protectedSettings": {
