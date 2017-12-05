@@ -172,7 +172,7 @@
             "apiVersion": "[variables('apiVersion').storageApiVersion]",
             "location": "[variables('location')]",
             "properties": {
-                "accountType": "[parameters('diagStoreAccountName')]"
+                "accountType": "[parameters('storageAccountType')]"
             }
         },
         {

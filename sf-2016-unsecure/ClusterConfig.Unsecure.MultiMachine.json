@@ -31,7 +31,7 @@
             "dataDeletionAgeInDays": "7",
             "storeType": "AzureStorage",
             "IsEncrypted": "false",
-            "connectionstring": "xstore:DefaultEndpointsProtocol=https;AccountName=[AzureAccountName];AccountKey=[AzureAccountKey]"
+            "connectionstring": "xstore:DefaultEndpointsProtocol=https;AccountName=[AzureAccountName];AccountKey=[AzureAccountKey];EndpointSuffix=local.azurestack.external"
         },
         "nodeTypes": [
             {
