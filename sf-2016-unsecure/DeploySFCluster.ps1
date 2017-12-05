@@ -36,10 +36,10 @@
     [PSCredential] $Credential,
 
     [Parameter(Mandatory = $true)]
-    [PSCredential] $DiagStoreAccountName,
+    [string] $DiagStoreAccountName,
 
     [Parameter(Mandatory = $true)]
-    [PSCredential] $DiagStoreAccountKey
+    [string] $DiagStoreAccountKey
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
