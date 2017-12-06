@@ -32,7 +32,7 @@
     [Parameter(Mandatory = $true)]
     [string] $ConfigPath,
 
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string] $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690",
 
     [Parameter(Mandatory = $true)]
