@@ -162,18 +162,20 @@
             "name": "[variables('imageConfig').storageAccountName]",
             "apiVersion": "[variables('apiVersion').storageApiVersion]",
             "location": "[variables('location')]",
-            "properties": {
-                "accountType": "[parameters('storageAccountType')]"
-            }
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "Storage"
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('diagStoreAccountName')]",
             "apiVersion": "[variables('apiVersion').storageApiVersion]",
             "location": "[variables('location')]",
-            "properties": {
-                "accountType": "[parameters('storageAccountType')]"
-            }
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "Storage"
         },
         {
             "apiVersion": "[variables('apiVersion').vNetApiVersion]",

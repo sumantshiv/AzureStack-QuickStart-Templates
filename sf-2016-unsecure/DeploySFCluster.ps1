@@ -33,6 +33,9 @@
     [string] $ConfigPath,
 
     [Parameter(Mandatory = $true)]
+    [string] $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690",
+
+    [Parameter(Mandatory = $true)]
     [PSCredential] $Credential,
 
     [Parameter(Mandatory = $true)]
@@ -55,6 +58,8 @@
                 # Enable File and Printer Sharing for Network Discovery
                 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
 
+                
+
                 # Get the index of current node and match it with the index of required deployment node.
                 $scaleSetIndex = $env:COMPUTERNAME.Substring($env:COMPUTERNAME.Length-1, 1)
 
@@ -68,14 +73,13 @@
                 }
 
                 Write-Verbose "Starting service fabric deployment on Node: '$env:COMPUTERNAME'."
-
-                $setupDir = "C:\SFSetup"
+                
+                # Store setup files on Temp disk.
+                $setupDir = "D:\SFSetup"
 				New-Item -Path $setupDir -ItemType Directory -Force
 				cd $setupDir
-                $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690"
-
                 $CofigFilePath = Join-Path -Path $setupDir -ChildPath 'ClusterConfig.json'
-                
+
                 Write-Verbose "Get Service fabric configuration from '$using:ConfigPath'"
 				$request = Invoke-WebRequest $using:ConfigPath -UseBasicParsing
 				$configContent = ConvertFrom-Json  $request.Content
@@ -152,8 +156,8 @@
                 Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
 				$configContent | Out-File $CofigFilePath
 
-                Write-Verbose "Downloading Service Fabric runtime from: '$serviceFabricUrl'"
-				Invoke-WebRequest -Uri $serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
+                Write-Verbose "Downloading Service Fabric runtime from: '$Using:serviceFabricUrl'"
+				Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
                 
                 Write-Verbose "Starting Service Fabric runtime deployment"
