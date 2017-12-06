@@ -33,6 +33,9 @@
     [string] $ConfigPath,
 
     [Parameter(Mandatory = $true)]
+    [string] $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690",
+
+    [Parameter(Mandatory = $true)]
     [PSCredential] $Credential
     )
 
@@ -63,11 +66,10 @@
 
                 Write-Verbose "Starting service fabric deployment on Node: '$env:COMPUTERNAME'."
 
-                $setupDir = "C:\SFSetup"
+                # Store setup files on Temp disk.
+                $setupDir = "D:\SFSetup"
 				New-Item -Path $setupDir -ItemType Directory -Force
 				cd $setupDir
-                $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690"
-
                 $CofigFilePath = Join-Path -Path $setupDir -ChildPath 'ClusterConfig.json'
                 
                 Write-Verbose "Get Service fabric configuration from '$using:ConfigPath'"
@@ -131,13 +133,13 @@
                 $nodeTypes += $nodeType
                 $configContent.properties.nodeTypes = $nodeTypes
                                 
-                $smbShareLocalPath = "C:\DiagnosticsStore"
-                $smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
+                #$smbShareLocalPath = "C:\DiagnosticsStore"
+                #$smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
 
-                Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
+                #Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
 
-                New-Item -Path $smbShareLocalPath -ItemType Directory -Force
-                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath
+                #New-Item -Path $smbShareLocalPath -ItemType Directory -Force
+                #New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath
 
                 #Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
                 #$configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
@@ -147,8 +149,8 @@
                 Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
 				$configContent | Out-File $CofigFilePath
 
-                Write-Verbose "Downloading Service Fabric runtime from: '$serviceFabricUrl'"
-				Invoke-WebRequest -Uri $serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
+                Write-Verbose "Downloading Service Fabric runtime from: '$Using:serviceFabricUrl'"
+				Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
                 
                 Write-Verbose "Starting Service Fabric runtime deployment"

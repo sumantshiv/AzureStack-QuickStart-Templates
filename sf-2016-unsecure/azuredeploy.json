@@ -161,9 +161,10 @@
             "name": "[variables('imageConfig').storageAccountName]",
             "apiVersion": "[variables('apiVersion').storageApiVersion]",
             "location": "[variables('location')]",
-            "properties": {
-                "accountType": "[parameters('storageAccountType')]"
-            }
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "Storage"
         },
         {
             "apiVersion": "[variables('apiVersion').vNetApiVersion]",
