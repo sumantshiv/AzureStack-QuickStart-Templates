@@ -26,6 +26,13 @@
       }
     ],
     "properties": {
+        "diagnosticsStore": {
+            "metadata": "File share accessible from all nodes.",
+            "dataDeletionAgeInDays": "7",
+            "storeType": "FileShare",
+            "IsEncrypted": "false",
+            "connectionstring": ""
+        },
         "nodeTypes": [
             {
                 "name": "NodeType0",
