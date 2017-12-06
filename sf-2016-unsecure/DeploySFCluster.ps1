@@ -143,7 +143,7 @@
                 Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath' with full permissions to $machineAccounts"
 
                 New-Item -Path $smbShareLocalPath -ItemType Directory -Force
-                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess $machineAccounts
+                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess Everyone
 
                 Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
                 $configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
