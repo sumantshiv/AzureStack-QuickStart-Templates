@@ -133,16 +133,20 @@
                 $nodeTypes += $nodeType
                 $configContent.properties.nodeTypes = $nodeTypes
                                 
-                #$smbShareLocalPath = "C:\DiagnosticsStore"
-                #$smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
+                $smbShareLocalPath = "C:\DiagnosticsStore"
+                $smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"                
 
-                #Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
+                $machineAccounts = ""
+                $sfnodes | % {$machineAccounts += $_.nodeName + "`$,"}
+                $machineAccounts = $machineAccounts.TrimEnd(',')
 
-                #New-Item -Path $smbShareLocalPath -ItemType Directory -Force
-                #New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath
+                Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath' with full permissions to $machineAccounts"
 
-                #Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
-                #$configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
+                New-Item -Path $smbShareLocalPath -ItemType Directory -Force
+                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess $machineAccounts
+
+                Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
+                $configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
 
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
