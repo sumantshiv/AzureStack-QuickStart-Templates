@@ -24,6 +24,12 @@
     [string] $reverseProxyEndpointPort,
 
     [Parameter(Mandatory = $true)]
+    [string] $ephemeralStartPort,
+
+    [Parameter(Mandatory = $true)]
+    [string] $ephemeralEndPort,
+
+    [Parameter(Mandatory = $true)]
     [string] $applicationStartPort,
 
     [Parameter(Mandatory = $true)]
@@ -124,25 +130,19 @@
                 $applicationPorts = New-Object PSObject
                 $applicationPorts | Add-Member -MemberType NoteProperty -Name "startPort" -Value "$Using:applicationStartPort"
                 $applicationPorts | Add-Member -MemberType NoteProperty -Name "endPort" -Value "$Using:applicationEndPort"
+
+                $ephemeralPorts = New-Object PSObject
+                $ephemeralPorts | Add-Member -MemberType NoteProperty -Name "startPort" -Value "$Using:ephemeralStartPort"
+                $ephemeralPorts | Add-Member -MemberType NoteProperty -Name "endPort" -Value "$Using:ephemeralEndPort"
                 
                 $nodeType | Add-Member -MemberType NoteProperty -Name "applicationPorts" -Value $applicationPorts
+                $nodeType | Add-Member -MemberType NoteProperty -Name "ephemeralPorts" -Value $ephemeralPorts
 
                 $nodeType | Add-Member -MemberType NoteProperty -Name "isPrimary" -Value $true
 
                 Write-Verbose "Adding Node Type to configuration: '$Using:vmNodeTypeName'"
                 $nodeTypes += $nodeType
                 $configContent.properties.nodeTypes = $nodeTypes
-                                
-                #$smbShareLocalPath = "C:\DiagnosticsStore"
-                #$smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
-
-                #Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'"
-
-                #New-Item -Path $smbShareLocalPath -ItemType Directory -Force
-                #New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath
-
-                #Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
-                #$configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
 
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
