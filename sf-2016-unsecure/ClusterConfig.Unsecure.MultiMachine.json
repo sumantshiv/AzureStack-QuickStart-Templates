@@ -39,6 +39,10 @@
                     "startPort": "20001",
                     "endPort": "20031"
                 },
+                "ephemeralPorts": {
+                    "startPort": "49152",
+                    "endPort": "65534"
+                },
                 "isPrimary": true
             }
         ],

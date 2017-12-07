@@ -97,6 +97,12 @@
         "servicereverseProxyEndpointPort": {
             "type": "int"
         },
+        "ephemeralStartPort": {
+            "type": "int"
+        },
+        "ephemeralEndPort": {
+            "type": "int"
+        },
         "applicationStartPort": {
             "type": "int"
         },
@@ -208,6 +214,8 @@
                                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
+                                            "ephemeralStartPort": "[parameters('ephemeralStartPort')]",
+                                            "ephemeralEndPort": "[parameters('ephemeralEndPort')]",
                                             "applicationStartPort": "[parameters('applicationStartPort')]",
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]"
