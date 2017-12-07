@@ -84,6 +84,14 @@
             "type": "int",
             "defaultValue": 19081
         },
+        "ephemeralStartPort": {
+            "type": "int",
+            "defaultValue": 49152
+        },
+        "ephemeralEndPort": {
+            "type": "int",
+            "defaultValue": 65534
+        },
         "applicationStartPort": {
             "type": "int",
             "defaultValue": 20001
@@ -478,6 +486,12 @@
                     },
                     "servicereverseProxyEndpointPort": {
                         "value": "[parameters('servicereverseProxyEndpointPort')]"
+                    },
+                    "ephemeralStartPort": {
+                        "value": "[parameters('ephemeralStartPort')]"
+                    },
+                    "ephemeralEndPort": {
+                        "value": "[parameters('ephemeralEndPort')]"
                     },
                     "applicationStartPort": {
                         "value": "[parameters('applicationStartPort')]"
