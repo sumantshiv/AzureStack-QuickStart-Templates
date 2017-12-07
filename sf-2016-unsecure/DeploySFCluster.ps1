@@ -134,13 +134,9 @@
                 $configContent.properties.nodeTypes = $nodeTypes
                                 
                 $smbShareLocalPath = "C:\DiagnosticsStore"
-                $smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"                
+                $smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
 
-                $machineAccounts = ""
-                $sfnodes | % {$machineAccounts += $_.nodeName + "`$,"}
-                $machineAccounts = $machineAccounts.TrimEnd(',')
-
-                Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath' with full permissions to $machineAccounts"
+                Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'."
 
                 New-Item -Path $smbShareLocalPath -ItemType Directory -Force
                 New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess Everyone
