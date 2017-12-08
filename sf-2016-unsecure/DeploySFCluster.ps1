@@ -55,6 +55,9 @@
 
             SetScript = 
             {
+                # Enable File and Printer Sharing for Network Discovery
+                Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
+
                 # Get the index of current node and match it with the index of required deployment node.
                 $scaleSetIndex = $env:COMPUTERNAME.Substring($env:COMPUTERNAME.Length-1, 1)
 
