@@ -396,7 +396,7 @@
                     "extensionProfile": {
                         "extensions": [
                             {
-                                "name": "PrepareServiceFabric",
+                                "name": "OpenPortsForServiceFabric",
                                 "properties": {
                                     "publisher": "Microsoft.Compute",
                                     "settings": {
