@@ -161,8 +161,7 @@
             "lbHttpProbeID": "[concat(variables('lbID'),'/probes/FabricHttpGatewayProbe')]"
         },
 
-        "sfDeploymentTemplateURL": "[concat(parameters('templatesBaseUrl'),'/deploySFCluster.json')]",
-        "serviceFabricPrepareScriptUrl": "[concat(parameters('scriptBaseUrl'), '/PrepareServiceFabricDeployment.ps1')]"
+        "sfDeploymentTemplateURL": "[concat(parameters('templatesBaseUrl'),'/deploySFCluster.json')]"
     },
     "resources": [
         {
@@ -392,27 +391,6 @@
                                 "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('imageConfig').storageAccountName), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('imageConfig').vhdContainerName)]"
                             ]
                         }
-                    },
-                    "extensionProfile": {
-                        "extensions": [
-                            {
-                                "name": "OpenPortsForServiceFabric",
-                                "properties": {
-                                    "publisher": "Microsoft.Compute",
-                                    "settings": {
-                                        "fileUris": [
-                                            "[variables('serviceFabricPrepareScriptUrl')]"
-                                        ]
-                                    },
-                                    "typeHandlerVersion": "1.8",
-                                    "autoUpgradeMinorVersion": true,
-                                    "protectedSettings": {
-                                        "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File PrepareServiceFabricDeployment.ps1"
-                                    },
-                                    "type": "CustomScriptExtension"
-                                }
-                            }
-                        ]
                     }
                 }
             },
