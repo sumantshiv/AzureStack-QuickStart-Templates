@@ -15,6 +15,9 @@
     [string] $vmNodeTypeName,
 
     [Parameter(Mandatory = $true)]
+    [string] $dnsSuffix,
+
+    [Parameter(Mandatory = $true)]
     [string] $clientConnectionEndpointPort,
 
     [Parameter(Mandatory = $true)]
@@ -42,7 +45,13 @@
     [string] $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690",
 
     [Parameter(Mandatory = $true)]
-    [PSCredential] $Credential
+    [PSCredential] $Credential,
+
+    [Parameter(Mandatory = $true)]
+    [string] $DiagStoreAccountName,
+
+    [Parameter(Mandatory = $true)]
+    [string] $DiagStoreAccountKey
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -55,6 +64,8 @@
 
             SetScript = 
             {
+                $ErrorActionPreference = "Stop"
+
                 # Enable File and Printer Sharing for Network Discovery (Port 445)
                 Write-Verbose "Opening TCP firewall port 445 for networking."
                 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
@@ -145,6 +156,13 @@
                 $nodeTypes += $nodeType
                 $configContent.properties.nodeTypes = $nodeTypes
 
+                Write-Verbose "Creating diagnostics share at: '$Using:DiagStoreAccountName' blob store"
+
+                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;BlobEndpoint=https://$Using:DiagStoreAccountName.blob.$Using:dnsSuffix;TableEndpoint=https://$Using:DiagStoreAccountName.table.$Using:dnsSuffix"
+
+                Write-Verbose "Setting diagnostics store to: '$diagStoreConnectinString'"
+                $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
+
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
                 Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
@@ -155,7 +173,8 @@
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
                 
                 Write-Verbose "Starting Service Fabric runtime deployment"
-				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA
+				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA -Verbose
+                Write-Verbose ($output | Out-String)
                 Write-Verbose "Service Fabric runtime deployment completed."
             }
 

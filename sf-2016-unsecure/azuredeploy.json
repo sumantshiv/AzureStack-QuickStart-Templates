@@ -64,6 +64,10 @@
         "dnsName": {
             "type": "string"
         },
+        "dnsSuffix": {
+            "type": "string",
+            "defaultValue": "local.azurestack.external"
+        },
         "addressPrefix": {
             "type": "string",
             "defaultValue": "10.0.0.0/16"
@@ -105,14 +109,14 @@
             "metadata": {
                 "description": "Linked Templates base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab/sf-2016-unsecure"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
         },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "Scripts base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab/sf-2016-unsecure"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
         }
     },
     "variables": {
@@ -140,6 +144,7 @@
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
         "dnsLable": "[tolower(parameters('dnsName'))]",
+        "diagStoreAccountName": "[toLower(concat('diagSA', uniqueString(resourceGroup().id)))]",
 
         "imageConfig": {
             "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",
@@ -168,6 +173,16 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('imageConfig').storageAccountName]",
+            "apiVersion": "[variables('apiVersion').storageApiVersion]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "Storage"
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('diagStoreAccountName')]",
             "apiVersion": "[variables('apiVersion').storageApiVersion]",
             "location": "[variables('location')]",
             "sku": {
@@ -431,7 +446,8 @@
             "name": "DeployServiceFabric",
             "type": "Microsoft.Resources/deployments",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('imageConfig').vmssUniqueName)]"
+                "[concat('Microsoft.Compute/virtualMachineScaleSets/', variables('imageConfig').vmssUniqueName)]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName'))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -479,6 +495,9 @@
                     "storageAccountName": {
                         "value": "[variables('imageConfig').storageAccountName]"
                     },
+                    "diagStoreAccountName": {
+                        "value": "[variables('diagStoreAccountName')]"
+                    },
                     "adminUserName": {
                         "value": "[parameters('adminUserName')]"
                     },
@@ -499,6 +518,9 @@
                     },
                     "subnetID": {
                         "value": "[variables('derivedIds').subnetID]"
+                    },
+                    "dnsSuffix": {
+                        "value": "[parameters('dnsSuffix')]"
                     },
                     "servicefabricTcpGatewayPort": {
                         "value": "[parameters('servicefabricTcpGatewayPort')]"
