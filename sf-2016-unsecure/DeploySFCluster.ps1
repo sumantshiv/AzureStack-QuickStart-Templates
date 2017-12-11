@@ -58,10 +58,10 @@
 
             SetScript = 
             {
+                $ErrorActionPreference = "Stop"
+
                 # Enable File and Printer Sharing for Network Discovery
                 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
-
-                
 
                 # Get the index of current node and match it with the index of required deployment node.
                 $scaleSetIndex = $env:COMPUTERNAME.Substring($env:COMPUTERNAME.Length-1, 1)
@@ -163,10 +163,10 @@
 				Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
                 
-                #Write-Verbose "Starting Service Fabric runtime deployment"
-				#$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA -Verbose
-                #$output
-                #Write-Verbose "Service Fabric runtime deployment completed."
+                Write-Verbose "Starting Service Fabric runtime deployment"
+				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA -Verbose
+                Write-Verbose ($output | Out-String)
+                Write-Verbose "Service Fabric runtime deployment completed."
             }
 
             TestScript = {
