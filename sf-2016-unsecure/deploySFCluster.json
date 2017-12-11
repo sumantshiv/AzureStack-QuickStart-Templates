@@ -91,6 +91,9 @@
         "subnetID": {
             "type": "string"
         },
+        "dnsSuffix": {
+            "type": "string"
+        },
         "servicefabricTcpGatewayPort": {
             "type": "int"
         },
@@ -124,7 +127,7 @@
         "serviceFabricDeploymentModuleUrl": "[concat(parameters('scriptBaseUrl'), '/DeploySFCluster.zip')]",
         "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
         "serviceFabricConfigPath": "[concat(parameters('scriptBaseUrl'), '/ClusterConfig.Unsecure.MultiMachine.json')]",
-
+        "dnsSuffixFull": "[concat(variables('location'), '.', parameters('dnsSuffix'))]",
         "deploymentNodeIndex": "0"
     },
     "resources": [
@@ -208,6 +211,7 @@
                                             "InstanceCount": "[parameters('InstanceCount')]",
                                             "ClusterName": "[parameters('clusterName')]",
                                             "vmNodeTypeName": "[parameters('vmNodeTypeName')]",
+                                            "dnsSuffix": "[variables('dnsSuffixFull')]",
                                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
