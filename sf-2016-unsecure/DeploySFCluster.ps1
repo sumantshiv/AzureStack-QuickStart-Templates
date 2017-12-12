@@ -157,6 +157,27 @@
                 Write-Verbose "Starting Service Fabric runtime deployment"
 				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA
                 Write-Verbose "Service Fabric runtime deployment completed."
+
+                try
+                {
+                    Write-Verbose "Waiting for 60 seconds for the cluster to come up."
+                    Start-Sleep -Seconds 60 
+                    Write-Verbose "Service Fabric deployment validation started." 
+                    Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
+                    $connetion = Connect-ServiceFabricCluster -ConnectionEndpoint localhost:$Using:clientConnectionEndpointPort
+                    if($connetion -and $connetion[0])
+                    {
+                        Write-Verbose "Service Fabric deployment validation successful." 
+                    }
+                    else
+                    {
+                        throw "Could not connect to service fabric cluster."
+                    }
+                }
+                catch
+                {
+                    throw "Service fabric validation failed with error: $_ `n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName' ."
+                }
             }
 
             TestScript = {
