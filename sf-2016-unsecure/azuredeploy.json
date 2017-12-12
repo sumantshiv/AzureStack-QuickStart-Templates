@@ -109,14 +109,14 @@
             "metadata": {
                 "description": "Linked Templates base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_testerror/sf-2016-unsecure"
         },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "Scripts base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_testerror/sf-2016-unsecure"
         }
     },
     "variables": {

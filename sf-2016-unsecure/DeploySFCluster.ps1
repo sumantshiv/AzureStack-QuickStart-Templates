@@ -158,7 +158,7 @@
 
                 Write-Verbose "Creating diagnostics share at: '$Using:DiagStoreAccountName' blob store"
 
-                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;BlobEndpoint=https://$Using:DiagStoreAccountName.blob.$Using:dnsSuffix;TableEndpoint=https://$Using:DiagStoreAccountName.table.$Using:dnsSuffix"
+                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;EndpointPrefix=$Using:dnsSuffix"
 
                 Write-Verbose "Setting diagnostics store to: '$diagStoreConnectinString'"
                 $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
