@@ -91,9 +91,6 @@
         "subnetID": {
             "type": "string"
         },
-        "dnsSuffix": {
-            "type": "string"
-        },
         "servicefabricTcpGatewayPort": {
             "type": "int"
         },
@@ -235,7 +232,6 @@
                                             "InstanceCount": "[parameters('InstanceCount')]",
                                             "ClusterName": "[parameters('clusterName')]",
                                             "vmNodeTypeName": "[parameters('vmNodeTypeName')]",
-                                            "dnsSuffix": "[parameters('dnsSuffix')]",
                                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
@@ -245,7 +241,9 @@
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
-                                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+                                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                                            "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
+                                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
                                         }
                                     },
                                     "protectedSettings": {

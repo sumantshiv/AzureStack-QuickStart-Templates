@@ -64,10 +64,6 @@
         "dnsName": {
             "type": "string"
         },
-        "dnsSuffix": {
-            "type": "string",
-            "defaultValue": "local.azurestack.external"
-        },
         "addressPrefix": {
             "type": "string",
             "defaultValue": "10.0.0.0/16"
@@ -518,9 +514,6 @@
                     },
                     "subnetID": {
                         "value": "[variables('derivedIds').subnetID]"
-                    },
-                    "dnsSuffix": {
-                        "value": "[parameters('dnsSuffix')]"
                     },
                     "servicefabricTcpGatewayPort": {
                         "value": "[parameters('servicefabricTcpGatewayPort')]"
