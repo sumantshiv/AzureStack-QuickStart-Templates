@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "value": "sfCluster"
+        },
+        "instanceCount": {
+            "value": "5"
+        },
+        "adminUserName": {
+            "value": "vmadmin"
+        },
+        "vmNodeTypeName": {
+            "value": "Type01"
+        },
+        "vmImageSku": {
+            "value": "2016-Datacenter"
+        },
+        "vmNodeSize": {
+            "value": "Standard_D2_v2"
+        },
+        "storageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "addressPrefix": {
+            "value": "10.0.0.0/16"
+        },
+        "subnetPrefix": {
+            "value": "10.0.0.0/24"
+        },
+        "servicefabricTcpGatewayPort": {
+            "value": 19000
+        },
+        "servicefabricHttpGatewayPort": {
+            "value": 19080
+        },
+        "servicereverseProxyEndpointPort": {
+            "value": 19081
+        },
+        "ephemeralStartPort": {
+            "value": 49152
+        },
+        "ephemeralEndPort": {
+            "value": 65534
+        },
+        "applicationStartPort": {
+            "value": 20000
+        },
+        "applicationEndPort": {
+            "value": 30000
+        }
+
+
+
+    }
+}
