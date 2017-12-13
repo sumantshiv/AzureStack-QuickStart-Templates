@@ -28,6 +28,10 @@
         "BlobUri": {
             "value": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2016-01-01').primaryEndpoints.blob]",
             "type": "string"
+        },
+        "TableUri": {
+            "value": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2016-01-01').primaryEndpoints.table]",
+            "type": "string"
         }
     }
 }
