@@ -15,9 +15,6 @@
     [string] $vmNodeTypeName,
 
     [Parameter(Mandatory = $true)]
-    [string] $dnsSuffix,
-
-    [Parameter(Mandatory = $true)]
     [string] $clientConnectionEndpointPort,
 
     [Parameter(Mandatory = $true)]
@@ -51,7 +48,13 @@
     [string] $DiagStoreAccountName,
 
     [Parameter(Mandatory = $true)]
-    [string] $DiagStoreAccountKey
+    [string] $DiagStoreAccountKey,
+
+    [Parameter(Mandatory = $true)]
+    [string] $DiagStoreAccountBlobUri,
+
+    [Parameter(Mandatory = $true)]
+    [string] $DiagStoreAccountTableUri
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -158,7 +161,7 @@
 
                 Write-Verbose "Creating diagnostics share at: '$Using:DiagStoreAccountName' blob store"
 
-                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;BlobEndpoint=https://$Using:DiagStoreAccountName.blob.$Using:dnsSuffix;TableEndpoint=https://$Using:DiagStoreAccountName.table.$Using:dnsSuffix"
+                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;BlobEndpoint=$using:DiagStoreAccountBlobUri;TableEndpoint=$Using:DiagStoreAccountTableUri"
 
                 Write-Verbose "Setting diagnostics store to: '$diagStoreConnectinString'"
                 $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
