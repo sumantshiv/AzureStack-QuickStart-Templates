@@ -10,13 +10,15 @@
             }
         },
         "instanceCount": {
-            "type": "int",
+            "type": "string",
             "metadata": {
                 "description": "Number of VM instances (5 or less)"
             },
-            "defaultValue": 3,
-            "minValue": 1,
-            "maxValue": 5
+            "defaultValue": "3",
+            "allowedValues": [
+                "3",
+                "5"
+            ]
         },
         "vmNodeTypeName": {
             "type": "string",
@@ -73,46 +75,46 @@
             "defaultValue": "10.0.0.0/24"
         },
         "servicefabricTcpGatewayPort": {
-            "type": "int",
-            "defaultValue": 19000
+            "type": "string",
+            "defaultValue": "19000"
         },
         "servicefabricHttpGatewayPort": {
-            "type": "int",
-            "defaultValue": 19080
+            "type": "string",
+            "defaultValue": "19080"
         },
         "servicereverseProxyEndpointPort": {
-            "type": "int",
-            "defaultValue": 19081
+            "type": "string",
+            "defaultValue": "19081"
         },
         "ephemeralStartPort": {
-            "type": "int",
-            "defaultValue": 49152
+            "type": "string",
+            "defaultValue": "49152"
         },
         "ephemeralEndPort": {
-            "type": "int",
-            "defaultValue": 65534
+            "type": "string",
+            "defaultValue": "65534"
         },
         "applicationStartPort": {
-            "type": "int",
-            "defaultValue": 20001
+            "type": "string",
+            "defaultValue": "20001"
         },
         "applicationEndPort": {
-            "type": "int",
-            "defaultValue": 20031
+            "type": "string",
+            "defaultValue": "20031"
         },
         "templatesBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "Linked Templates base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_gallerypkg/sf-2016-unsecure"
         },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "Scripts base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
+            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_gallerypkg/sf-2016-unsecure"
         }
     },
     "variables": {

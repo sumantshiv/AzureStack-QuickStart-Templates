@@ -15,12 +15,15 @@
             }
         },
         "instanceCount": {
-            "type": "int",
+            "type": "string",
             "metadata": {
-                "description": "Number of VM instances (100 or less)"
+                "description": "Number of VM instances (5 or less)"
             },
-            "minValue": 1,
-            "maxValue": 5
+            "defaultValue": "3",
+            "allowedValues": [
+                "3",
+                "5"
+            ]
         },
         "vmNodeTypeName": {
             "type": "string",
@@ -92,25 +95,25 @@
             "type": "string"
         },
         "servicefabricTcpGatewayPort": {
-            "type": "int"
+            "type": "string"
         },
         "servicefabricHttpGatewayPort": {
-            "type": "int"
+            "type": "string"
         },
         "servicereverseProxyEndpointPort": {
-            "type": "int"
+            "type": "string"
         },
         "ephemeralStartPort": {
-            "type": "int"
+            "type": "string"
         },
         "ephemeralEndPort": {
-            "type": "int"
+            "type": "string"
         },
         "applicationStartPort": {
-            "type": "int"
+            "type": "string"
         },
         "applicationEndPort": {
-            "type": "int"
+            "type": "string"
         },
         "scriptBaseUrl": {
             "type": "string",
