@@ -4,42 +4,74 @@
     "parameters": {
         "clusterName": {
             "type": "string",
-            "defaultValue": "Cluster",
             "metadata": {
                 "description": "Name of your cluster - Between 3 and 23 characters. Letters and numbers only"
             }
         },
         "instanceCount": {
-            "type": "int",
+            "type": "string",
             "metadata": {
-                "description": "Number of VM instances (5 or less)"
+                "description": "Number of VM instances"
             },
-            "defaultValue": 3,
-            "minValue": 1,
-            "maxValue": 5
+            "defaultValue": "3",
+            "allowedValues": [
+                "3",
+                "5",
+                "10",
+                "15",
+                "20"
+            ]
         },
         "vmNodeTypeName": {
             "type": "string",
             "defaultValue": "Type01",
-            "maxLength": 9
+            "maxLength": 9,
+            "metadata": {
+                "description": "Service fabric node type name. Also used for VM name prefix."
+            }
+        },
+        "vmImagePublisher": {
+            "type": "string",
+            "defaultValue": "MicrosoftWindowsServer"
+        },
+        "vmImageOffer": {
+            "type": "string",
+            "defaultValue": "WindowsServer"
         },
         "vmImageSku": {
             "type": "string",
-            "defaultValue": "2016-Datacenter",
-            "allowedValues": [
-                "2016-Datacenter"
-            ]
+            "defaultValue": "2016-Datacenter"
+        },
+        "vmImageVersion": {
+            "type": "string",
+            "defaultValue": "latest"
         },
         "vmNodeSize": {
             "type": "string",
             "allowedValues": [
-                "Standard_D2_v2"
+                "Standard_D1_v2",
+                "Standard_D2_v2",
+                "Standard_D3_v2",
+                "Standard_D4_v2",
+                "Standard_D5_v2",
+                "Standard_D11_v2",
+                "Standard_D12_v2",
+                "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_DS1_v2",
+                "Standard_DS2_v2",
+                "Standard_DS3_v2",
+                "Standard_DS4_v2",
+                "Standard_DS5_v2",
+                "Standard_DS11_v2",
+                "Standard_DS12_v2",
+                "Standard_DS13_v2",
+                "Standard_DS14_v2"
             ],
             "defaultValue": "Standard_D2_v2"
         },
         "adminUserName": {
             "type": "string",
-            "defaultValue": "vmadmin",
             "metadata": {
                 "description": "Remote desktop user Id"
             }
@@ -50,55 +82,47 @@
                 "description": "Remote desktop user password. Must be a strong password"
             }
         },
-        "storageAccountType": {
-            "type": "string",
-            "allowedValues": [
-                "Standard_LRS",
-                "Standard_GRS"
-            ],
-            "defaultValue": "Standard_LRS",
-            "metadata": {
-                "description": "Replication option for the VM image storage account"
-            }
-        },
-        "dnsName": {
-            "type": "string"
-        },
         "addressPrefix": {
             "type": "string",
-            "defaultValue": "10.0.0.0/16"
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "The address prefix for the cluster’s  virtual network"
+            }
         },
         "subnetPrefix": {
             "type": "string",
-            "defaultValue": "10.0.0.0/24"
+            "defaultValue": "10.0.0.0/24",
+            "metadata": {
+                "description": "The address prefix for the cluster’s subnet in the virtual network. "
+            }
         },
         "servicefabricTcpGatewayPort": {
-            "type": "int",
-            "defaultValue": 19000
+            "type": "string",
+            "defaultValue": "19000",
+            "metadata": {
+                "description": "Service Fabric cluster TCP gateway port to be used to connect using service fabric client."
+            }
         },
         "servicefabricHttpGatewayPort": {
-            "type": "int",
-            "defaultValue": 19080
+            "type": "string",
+            "defaultValue": "19080",
+            "metadata": {
+                "description": "Service Fabric cluster HTTP gateway port to be used to connect using service fabric explorer."
+            }
         },
-        "servicereverseProxyEndpointPort": {
-            "type": "int",
-            "defaultValue": 19081
+        "servicefabricReverseProxyEndpointPort": {
+            "type": "string",
+            "defaultValue": "19081",
+            "metadata": {
+                "description": "Service Fabric cluster reverse proxy port."
+            }
         },
-        "ephemeralStartPort": {
-            "type": "int",
-            "defaultValue": 49152
-        },
-        "ephemeralEndPort": {
-            "type": "int",
-            "defaultValue": 65534
-        },
-        "applicationStartPort": {
-            "type": "int",
-            "defaultValue": 20001
-        },
-        "applicationEndPort": {
-            "type": "int",
-            "defaultValue": 20031
+        "serviceFabricUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Service fabric runtime download url."
+            },
+            "defaultValue": "http://go.microsoft.com/fwlink/?LinkId=730690"
         },
         "templatesBaseUrl": {
             "type": "string",
@@ -139,18 +163,23 @@
         "subnetName": "[concat(variables('uniquePrefix'), 'subnet')]",
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
-        "dnsLable": "[tolower(parameters('dnsName'))]",
+        "dnsLable": "[tolower(parameters('clusterName'))]",
         "diagStoreAccountName": "[toLower(concat('diagSA', uniqueString(resourceGroup().id)))]",
+        "ephemeralStartPort": "49152",
+        "ephemeralEndPort": "65534",
+        "applicationStartPort": "20000",
+        "applicationEndPort": "30000",
 
         "imageConfig": {
             "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",
-            "vmImagePublisher": "MicrosoftWindowsServer",
-            "vmImageOffer": "WindowsServer",
-            "vmImageVersion": "latest",
+            "vmImagePublisher": "[parameters('vmImagePublisher')]",
+            "vmImageOffer": "[parameters('vmImageOffer')]",
+            "vmImageVersion": "[parameters('vmImageVersion')]",
             "vhdContainerName": "[concat(variables('uniquePrefix'), 'vhd')]",
             "osDiskName": "[concat(variables('uniquePrefix'), 'osdisk')]",
             "overProvision": "false",
-            "storageAccountName": "[toLower(concat('SA', uniqueString(resourceGroup().id)))]"
+            "storageAccountName": "[toLower(concat('SA', uniqueString(resourceGroup().id)))]",
+            "storageAccountType": "Standard_LRS"
         },
 
         "derivedIds": {
@@ -172,7 +201,7 @@
             "apiVersion": "[variables('apiVersion').storageApiVersion]",
             "location": "[variables('location')]",
             "sku": {
-                "name": "[parameters('storageAccountType')]"
+                "name": "[variables('imageConfig').storageAccountType]"
             },
             "kind": "Storage"
         },
@@ -182,7 +211,7 @@
             "apiVersion": "[variables('apiVersion').storageApiVersion]",
             "location": "[variables('location')]",
             "sku": {
-                "name": "[parameters('storageAccountType')]"
+                "name": "[variables('imageConfig').storageAccountType]"
             },
             "kind": "Storage"
         },
@@ -522,19 +551,19 @@
                         "value": "[parameters('servicefabricHttpGatewayPort')]"
                     },
                     "servicereverseProxyEndpointPort": {
-                        "value": "[parameters('servicereverseProxyEndpointPort')]"
+                        "value": "[parameters('servicefabricReverseProxyEndpointPort')]"
                     },
                     "ephemeralStartPort": {
-                        "value": "[parameters('ephemeralStartPort')]"
+                        "value": "[variables('ephemeralStartPort')]"
                     },
                     "ephemeralEndPort": {
-                        "value": "[parameters('ephemeralEndPort')]"
+                        "value": "[variables('ephemeralEndPort')]"
                     },
                     "applicationStartPort": {
-                        "value": "[parameters('applicationStartPort')]"
+                        "value": "[variables('applicationStartPort')]"
                     },
                     "applicationEndPort": {
-                        "value": "[parameters('applicationEndPort')]"
+                        "value": "[variables('applicationEndPort')]"
                     },
                     "scriptBaseUrl": {
                         "value": "[parameters('scriptBaseUrl')]"
