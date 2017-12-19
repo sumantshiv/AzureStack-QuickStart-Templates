@@ -15,12 +15,10 @@
             }
         },
         "instanceCount": {
-            "type": "int",
+            "type": "string",
             "metadata": {
-                "description": "Number of VM instances (100 or less)"
-            },
-            "minValue": 1,
-            "maxValue": 5
+                "description": "Number of VM instances."
+            }
         },
         "vmNodeTypeName": {
             "type": "string",
@@ -30,10 +28,7 @@
             "type": "string"
         },
         "vmImageSku": {
-            "type": "string",
-            "allowedValues": [
-                "2016-Datacenter"
-            ]
+            "type": "string"
         },
         "vmImagePublisher": {
             "type": "string"
@@ -45,11 +40,7 @@
             "type": "string"
         },
         "vmNodeSize": {
-            "type": "string",
-            "allowedValues": [
-                "Standard_D2_v2"
-            ],
-            "defaultValue": "Standard_D2_v2"
+            "type": "string"
         },
         "osDiskName": {
             "type": "string"
@@ -65,7 +56,6 @@
         },
         "adminUserName": {
             "type": "string",
-            "defaultValue": "vmadmin",
             "metadata": {
                 "description": "Remote desktop user Id"
             }
@@ -92,32 +82,37 @@
             "type": "string"
         },
         "servicefabricTcpGatewayPort": {
-            "type": "int"
+            "type": "string"
         },
         "servicefabricHttpGatewayPort": {
-            "type": "int"
+            "type": "string"
         },
         "servicereverseProxyEndpointPort": {
-            "type": "int"
+            "type": "string"
         },
         "ephemeralStartPort": {
-            "type": "int"
+            "type": "string"
         },
         "ephemeralEndPort": {
-            "type": "int"
+            "type": "string"
         },
         "applicationStartPort": {
-            "type": "int"
+            "type": "string"
         },
         "applicationEndPort": {
-            "type": "int"
+            "type": "string"
+        },
+        "serviceFabricUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Service fabric runtime download url."
+            }
         },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "Scripts base url"
-            },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab/sf-2016-unsecure"
+            }
         }
     },
     "variables": {
@@ -240,6 +235,7 @@
                                             "applicationStartPort": "[parameters('applicationStartPort')]",
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
+                                            "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                                             "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
                                             "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
