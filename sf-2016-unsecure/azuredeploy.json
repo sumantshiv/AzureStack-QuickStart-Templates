@@ -565,6 +565,9 @@
                     "applicationEndPort": {
                         "value": "[variables('applicationEndPort')]"
                     },
+                    "serviceFabricUrl": {
+                        "value": "[parameters('serviceFabricUrl')]"
+                    },
                     "scriptBaseUrl": {
                         "value": "[parameters('scriptBaseUrl')]"
                     }
