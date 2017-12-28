@@ -204,6 +204,8 @@
                         else
                         {
                             Write-verbose "Could not connect to service fabric cluster. Retrying until $timeoutTime."
+                            Write-Verbose "Waiting for 60 seconds..."
+                            Start-Sleep -Seconds 60
                         }
                     }
                     catch
@@ -250,28 +252,39 @@
                 # Upgrade state validation
                 $timeoutTime = (Get-Date).AddMinutes(5)
                 $upgradeComplete = $false
+                $lastException
 
                 while((-not $upgradeComplete) -and ((Get-Date) -lt $timeoutTime))
                 {
-                    $Error.Clear()
-                    $upgradeStatus = (Get-ServiceFabricClusterConfigurationUpgradeStatus).UpgradeState
-                    
-                    if(-not ($upgradeStatus -eq "RollingForwardCompleted"))
+                    try
                     {
-                        Write-Verbose "Unexpected Upgrade status: '$upgradeStatus'. Retrying until $timeoutTime."
-                        Start-Sleep -Seconds 60
+                        $upgradeStatus = (Get-ServiceFabricClusterConfigurationUpgradeStatus).UpgradeState
+
+                        if(-not ($upgradeStatus -eq "RollingForwardCompleted"))
+                        {
+                            Write-Verbose "Expected service Fabric upgrade status '$upgradeStatus' set." 
+                            $upgradeComplete = $true    
+                            break
+                        }
+                        else
+                        {
+                            Write-Verbose "Unexpected Upgrade status: '$upgradeStatus'. Retrying until $timeoutTime."
+                            Write-Verbose "Waiting for 60 seconds..."
+                            Start-Sleep -Seconds 60
+                        }
                     }
-                    else
+                    catch
                     {
-                        Write-Verbose "Expected service Fabric upgrade status '$upgradeStatus' set." 
-                        $upgradeComplete = $true    
-                        break
+                        $lastException = $_.Exception
+                        Write-Verbose "Upgrade status check failed because: $lastException. Retrying until $timeoutTime."
+                        Write-Verbose "Waiting for 60 seconds..."
+                        Start-Sleep -Seconds 60
                     }
                 }
 
                 if(-not $upgradeComplete)                
                 {
-                    throw "Cluster validation failed with error: Failed to achieve upgrade status: 'RollingForwardCompleted'.`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
+                    throw "Cluster validation failed with error: $lastException.`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
                 }
             }
 
