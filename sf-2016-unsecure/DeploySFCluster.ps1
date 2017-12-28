@@ -195,9 +195,16 @@
                     try
                     {   
                         Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
-                        Connect-ServiceFabricCluster -ConnectionEndpoint localhost:$Using:clientConnectionEndpointPort
-                        Write-Verbose "Service Fabric connection successful." 
-                        $connectSucceeded = $true
+                        $connection = Connect-ServiceFabricCluster -ConnectionEndpoint localhost:$Using:clientConnectionEndpointPort
+                        if($connetion -and $connetion[0])
+                        {
+                            Write-Verbose "Service Fabric connection successful." 
+                            $connectSucceeded = $true    
+                        }
+                        else
+                        {
+                            Write-verbose "Could not connect to service fabric cluster. Retrying until $timeoutTime."
+                        }
                     }
                     catch
                     {
