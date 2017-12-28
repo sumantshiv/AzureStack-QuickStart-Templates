@@ -29,9 +29,9 @@
         "diagnosticsStore": {
             "metadata": "Diagnostics store provided in Azure stack blob storage.",
             "dataDeletionAgeInDays": "7",
-            "storeType": "AzureStorage",
+            "storeType": "FileShare",
             "IsEncrypted": "false",
-            "connectionstring": "xstore:DefaultEndpointsProtocol=https;AccountName=[AzureAccountName];AccountKey=[AzureAccountKey]"
+            "connectionstring": ""
         },
         "nodeTypes": [
             {
