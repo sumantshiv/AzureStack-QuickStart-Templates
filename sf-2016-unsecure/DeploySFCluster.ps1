@@ -175,30 +175,116 @@
 				Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
                 
+                # Deployment
+
                 Write-Verbose "Starting Service Fabric runtime deployment"
 				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA -Verbose
                 Write-Verbose ($output | Out-String)
-                Write-Verbose "Service Fabric runtime deployment completed."
-
-                 try
+                
+                # Validations
+                
+                Write-Verbose "Validating Service Fabric deployment."
+                
+                # Connection validation
+                $timeoutTime = (Get-Date).AddMinutes(5)
+                $connectSucceeded = $false
+                $lastException
+                
+                while(-not $connectSucceeded -and (Get-Date) -lt $timeoutTime)
                 {
-                    Write-Verbose "Waiting for 60 seconds for the cluster to come up."
-                    Start-Sleep -Seconds 60 
-                    Write-Verbose "Service Fabric deployment validation started." 
-                    Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
-                    $connetion = Connect-ServiceFabricCluster -ConnectionEndpoint localhost:$Using:clientConnectionEndpointPort
-                    if($connetion -and $connetion[0])
+                    try
+                    {   
+                        Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
+                        $connection = Connect-ServiceFabricCluster -ConnectionEndpoint localhost:$Using:clientConnectionEndpointPort
+                        if($connection -and $connection[0])
+                        {
+                            Write-Verbose "Service Fabric connection successful." 
+                            $connectSucceeded = $true    
+                        }
+                        else
+                        {
+                            Write-verbose "Could not connect to service fabric cluster. Retrying until $timeoutTime."
+                            Write-Verbose "Waiting for 60 seconds..."
+                            Start-Sleep -Seconds 60
+                        }
+                    }
+                    catch
                     {
-                        Write-Verbose "Service Fabric deployment validation successful." 
+                        $lastException = $_.Exception
+                        Write-Verbose "Connection failed because: $lastException. Retrying until $timeoutTime."
+                        Write-Verbose "Waiting for 60 seconds..."
+                        Start-Sleep -Seconds 60
+                    }
+                }
+
+                if(-not $connectSucceeded)
+                {
+                    throw "Cluster validation failed with error: $lastException.`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
+                }
+
+                # Health validation
+                $timeoutTime = (Get-Date).AddMinutes(5)
+                $isHealthy = $false
+                
+                while((-not $isHealthy) -and ((Get-Date) -lt $timeoutTime))
+                {
+                    $Error.Clear()
+                    $healthReport = Get-ServiceFabricClusterHealth #Get-ServiceFabricClusterHealth ToString is bugged, so calling twice
+                    $healthReport = Get-ServiceFabricClusterHealth
+                    if(($healthReport.HealthEvents.Count > 0) -or ($healthReport.UnhealthyEvaluations.Count > 0))
+                    {
+                        Write-Verbose "Cluster health events were raised. Retrying until $timeoutTime."
+                        Start-Sleep -Seconds 60
                     }
                     else
                     {
-                        throw "Could not connect to service fabric cluster."
+                        Write-Verbose "Service Fabric cluster is healthy." 
+                        $isHealthy = $true
+                        break
                     }
                 }
-                catch
+
+                if(-not $isHealthy)                
                 {
-                    throw "Service fabric validation failed with error: $_ `n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName' ."
+                    throw "Cluster validation failed with error: Cluster unhealthy.`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
+                }
+
+                # Upgrade state validation
+                $timeoutTime = (Get-Date).AddMinutes(5)
+                $upgradeComplete = $false
+                $lastException
+
+                while((-not $upgradeComplete) -and ((Get-Date) -lt $timeoutTime))
+                {
+                    try
+                    {
+                        $upgradeStatus = (Get-ServiceFabricClusterConfigurationUpgradeStatus).UpgradeState
+
+                        if($upgradeStatus -eq "RollingForwardCompleted")
+                        {
+                            Write-Verbose "Expected service Fabric upgrade status '$upgradeStatus' set." 
+                            $upgradeComplete = $true    
+                            break
+                        }
+                        else
+                        {
+                            Write-Verbose "Unexpected Upgrade status: '$upgradeStatus'. Retrying until $timeoutTime."
+                            Write-Verbose "Waiting for 60 seconds..."
+                            Start-Sleep -Seconds 60
+                        }
+                    }
+                    catch
+                    {
+                        $lastException = $_.Exception
+                        Write-Verbose "Upgrade status check failed because: $lastException. Retrying until $timeoutTime."
+                        Write-Verbose "Waiting for 60 seconds..."
+                        Start-Sleep -Seconds 60
+                    }
+                }
+
+                if(-not $upgradeComplete)                
+                {
+                    throw "Cluster validation failed with error: $lastException.`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
                 }
             }
 
