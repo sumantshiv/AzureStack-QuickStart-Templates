@@ -561,6 +561,12 @@
             }
         }
     ],
-        "outputs": {
+    "outputs": {
+        {
+            "clusterMgmtEndpoint": {
+                "value": "[concat('http://',reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricHttpGatewayPort'), '/explorer')]",
+                "type": "string"
+            }
         }
     }
+}
