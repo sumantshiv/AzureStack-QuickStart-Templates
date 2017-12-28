@@ -159,12 +159,17 @@
                 $nodeTypes += $nodeType
                 $configContent.properties.nodeTypes = $nodeTypes
 
-                Write-Verbose "Creating diagnostics share at: '$Using:DiagStoreAccountName' blob store"
+                                $smbShareLocalPath = "C:\DiagnosticsStore"
+                $smbSharePath = "\\$startNodeIpAddress\DiagnosticsStore"
 
-                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;BlobEndpoint=$using:DiagStoreAccountBlobUri;TableEndpoint=$Using:DiagStoreAccountTableUri"
+                Write-Verbose "Creating diagnostics share at: '$smbShareLocalPath'."
 
-                Write-Verbose "Setting diagnostics store to: '$diagStoreConnectinString'"
-                $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
+                New-Item -Path $smbShareLocalPath -ItemType Directory -Force
+                New-SmbShare -Name "DiagnosticsStore" -Path $smbShareLocalPath -FullAccess Everyone
+
+                Write-Verbose "Setting diagnostics store to: '$smbSharePath'"
+                $configContent.properties.diagnosticsStore.connectionstring = $smbSharePath
+
 
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
