@@ -188,10 +188,10 @@
                 # Connection validation
                 $timeoutTime = (Get-Date).AddMinutes(5)
                 $connectSucceeded = $false
+                $lastException
                 
                 while(-not $connectSucceeded -and (Get-Date) -lt $timeoutTime)
                 {
-                    $Error.Clear()
                     try
                     {   
                         Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
@@ -208,7 +208,8 @@
                     }
                     catch
                     {
-                        Write-Verbose "Connection failed because: $($_.Exception). Retrying until $timeoutTime."
+                        $lastException = $_.Exception
+                        Write-Verbose "Connection failed because: $lastException. Retrying until $timeoutTime."
                         Write-Verbose "Waiting for 60 seconds..."
                         Start-Sleep -Seconds 60
                     }
@@ -216,7 +217,7 @@
 
                 if(-not $connectSucceeded)
                 {
-                    throw "Cluster validation failed with error: $($error[0]).`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
+                    throw "Cluster validation failed with error: $lastException.`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
                 }
 
                 # Health validation
