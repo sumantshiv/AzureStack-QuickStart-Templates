@@ -260,7 +260,7 @@
                     {
                         $upgradeStatus = (Get-ServiceFabricClusterConfigurationUpgradeStatus).UpgradeState
 
-                        if(-not ($upgradeStatus -eq "RollingForwardCompleted"))
+                        if($upgradeStatus -eq "RollingForwardCompleted")
                         {
                             Write-Verbose "Expected service Fabric upgrade status '$upgradeStatus' set." 
                             $upgradeComplete = $true    
