@@ -161,10 +161,11 @@
 
                 Write-Verbose "Creating diagnostics share at: '$Using:DiagStoreAccountName' blob store"
 
-                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;BlobEndpoint=$using:DiagStoreAccountBlobUri;TableEndpoint=$Using:DiagStoreAccountTableUri"
+                $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;EndpointPrefix=local.azurestack.external"
 
                 Write-Verbose "Setting diagnostics store to: '$diagStoreConnectinString'"
                 $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
+
 
 				$configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
