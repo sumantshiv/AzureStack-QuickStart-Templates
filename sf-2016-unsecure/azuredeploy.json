@@ -9,18 +9,13 @@
             }
         },
         "instanceCount": {
-            "type": "string",
+            "type": "int",
             "metadata": {
-                "description": "Size of the VM scale set."
+                "description": "Size of the VM scale set (Min 3 and Max 25)."
             },
-            "defaultValue": "3",
-            "allowedValues": [
-                "3",
-                "5",
-                "10",
-                "15",
-                "20"
-            ]
+            "defaultValue": 3,
+            "minValue": 3,
+            "maxValue": 25
         },
         "vmNodeTypeName": {
             "type": "string",
@@ -97,22 +92,22 @@
             }
         },
         "servicefabricTcpGatewayPort": {
-            "type": "string",
-            "defaultValue": "19000",
+            "type": "int",
+            "defaultValue": 19000,
             "metadata": {
                 "description": "Service Fabric cluster TCP gateway port to be used to connect using service fabric client."
             }
         },
         "servicefabricHttpGatewayPort": {
-            "type": "string",
-            "defaultValue": "19080",
+            "type": "int",
+            "defaultValue": 19080,
             "metadata": {
                 "description": "Service Fabric cluster HTTP gateway port to be used to connect using service fabric explorer."
             }
         },
         "servicefabricReverseProxyEndpointPort": {
-            "type": "string",
-            "defaultValue": "19081",
+            "type": "int",
+            "defaultValue": 19081,
             "metadata": {
                 "description": "Service Fabric cluster reverse proxy port."
             }
@@ -165,10 +160,10 @@
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
         "dnsLable": "[tolower(parameters('clusterName'))]",
         "diagStoreAccountName": "[toLower(concat('diagSA', uniqueString(resourceGroup().id)))]",
-        "ephemeralStartPort": "49152",
-        "ephemeralEndPort": "65534",
-        "applicationStartPort": "20000",
-        "applicationEndPort": "30000",
+        "ephemeralStartPort": 49152,
+        "ephemeralEndPort": 65534,
+        "applicationStartPort": 20000,
+        "applicationEndPort": 30000,
         "lbPortsArray": "[concat(array(parameters('servicefabricTcpGatewayPort')), array(parameters('servicefabricHttpGatewayPort')), parameters('lbApplicationPorts'))]",
 
         "imageConfig": {

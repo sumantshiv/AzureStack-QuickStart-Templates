@@ -15,7 +15,7 @@
             }
         },
         "instanceCount": {
-            "type": "string",
+            "type": "int",
             "metadata": {
                 "description": "Number of VM instances."
             }
@@ -82,25 +82,25 @@
             "type": "string"
         },
         "servicefabricTcpGatewayPort": {
-            "type": "string"
+            "type": "int"
         },
         "servicefabricHttpGatewayPort": {
-            "type": "string"
+            "type": "int"
         },
         "servicereverseProxyEndpointPort": {
-            "type": "string"
+            "type": "int"
         },
         "ephemeralStartPort": {
-            "type": "string"
+            "type": "int"
         },
         "ephemeralEndPort": {
-            "type": "string"
+            "type": "int"
         },
         "applicationStartPort": {
-            "type": "string"
+            "type": "int"
         },
         "applicationEndPort": {
-            "type": "string"
+            "type": "int"
         },
         "serviceFabricUrl": {
             "type": "string",
