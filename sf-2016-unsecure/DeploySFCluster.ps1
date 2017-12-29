@@ -203,9 +203,7 @@
                         }
                         else
                         {
-                            Write-verbose "Could not connect to service fabric cluster. Retrying until $timeoutTime."
-                            Write-Verbose "Waiting for 60 seconds..."
-                            Start-Sleep -Seconds 60
+                            throw "Could not connect to service fabric cluster."
                         }
                     }
                     catch
@@ -250,7 +248,7 @@
                 }
 
                 # Upgrade state validation
-                $timeoutTime = (Get-Date).AddMinutes(5)
+                $timeoutTime = (Get-Date).AddMinutes(10)
                 $upgradeComplete = $false
                 $lastException
 
@@ -268,9 +266,7 @@
                         }
                         else
                         {
-                            Write-Verbose "Unexpected Upgrade status: '$upgradeStatus'. Retrying until $timeoutTime."
-                            Write-Verbose "Waiting for 60 seconds..."
-                            Start-Sleep -Seconds 60
+                            throw "Unexpected Upgrade status: '$upgradeStatus'."
                         }
                     }
                     catch
