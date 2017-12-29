@@ -131,19 +131,12 @@
             },
             "defaultValue": "http://go.microsoft.com/fwlink/?LinkId=730690"
         },
-        "templatesBaseUrl": {
-            "type": "string",
-            "metadata": {
-                "description": "Linked Templates base url"
-            },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
-        },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
                 "description": "Scripts base url"
             },
-            "defaultValue": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/svcfab_blob/sf-2016-unsecure"
+            "defaultValue": "[deployment().properties.templateLink.uri]"
         }
     },
     "variables": {
@@ -199,8 +192,8 @@
             "lbHttpProbeID": "[concat(variables('lbID'),'/probes/FabricHttpGatewayProbe')]"
         },
 
-        "sfDeploymentTemplateURL": "[concat(parameters('templatesBaseUrl'),'/deploySFCluster.json')]",
-        "serviceFabricPrepareScriptUrl": "[concat(parameters('scriptBaseUrl'), '/PrepareServiceFabricDeployment.ps1')]"
+        "sfDeploymentTemplateURL": "[uri(parameters('scriptBaseUrl'), 'deploySFCluster.json')]",
+        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]"
     },
     "resources": [
         {

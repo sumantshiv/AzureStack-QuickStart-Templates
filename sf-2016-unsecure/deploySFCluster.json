@@ -122,10 +122,10 @@
         },
 
         "location": "[resourceGroup().location]",
-        "serviceFabricDeploymentModuleUrl": "[concat(parameters('scriptBaseUrl'), '/DeploySFCluster.zip')]",
+        "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
         "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
-        "serviceFabricPrepareScriptUrl": "[concat(parameters('scriptBaseUrl'), '/PrepareServiceFabricDeployment.ps1')]",
-        "serviceFabricConfigPath": "[concat(parameters('scriptBaseUrl'), '/ClusterConfig.Unsecure.MultiMachine.json')]",
+        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]",
+        "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.Unsecure.MultiMachine.json')]",
 
         "deploymentNodeIndex": "0"
     },
