@@ -248,7 +248,8 @@
                 }
 
                 # Upgrade state validation
-                $timeoutTime = (Get-Date).AddMinutes(10)
+                $minutesToWait = 5 * $InstanceCount
+                $timeoutTime = (Get-Date).AddMinutes($minutesToWait)
                 $upgradeComplete = $false
                 $lastException
 
