@@ -1,0 +1,272 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of your cluster - Between 3 and 23 characters. Letters and numbers only"
+            }
+        },
+        "vmScaleSetName": {
+            "type": "string",
+            "metadata": {
+                "description": "VM Scaleset name"
+            }
+        },
+        "instanceCount": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of VM instances."
+            }
+        },
+        "vmNodeTypeName": {
+            "type": "string",
+            "maxLength": 9
+        },
+        "overProvision": {
+            "type": "string"
+        },
+        "vmImageSku": {
+            "type": "string"
+        },
+        "vmImagePublisher": {
+            "type": "string"
+        },
+        "vmImageOffer": {
+            "type": "string"
+        },
+        "vmImageVersion": {
+            "type": "string"
+        },
+        "vmNodeSize": {
+            "type": "string"
+        },
+        "osDiskName": {
+            "type": "string"
+        },
+        "vhdContainerName": {
+            "type": "string"
+        },
+        "storageAccountName": {
+            "type": "string"
+        },
+        "diagStoreAccountName": {
+            "type": "string"
+        },
+        "adminUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "Remote desktop user Id"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Remote desktop user password. Must be a strong password"
+            }
+        },
+        "nicName": {
+            "type": "string"
+        },
+        "ipConfigName": {
+            "type": "string"
+        },
+        "lbPoolID": {
+            "type": "string"
+        },
+        "lbNatPoolID": {
+            "type": "string"
+        },
+        "subnetID": {
+            "type": "string"
+        },
+        "servicefabricTcpGatewayPort": {
+            "type": "int"
+        },
+        "servicefabricHttpGatewayPort": {
+            "type": "int"
+        },
+        "servicereverseProxyEndpointPort": {
+            "type": "int"
+        },
+        "ephemeralStartPort": {
+            "type": "int"
+        },
+        "ephemeralEndPort": {
+            "type": "int"
+        },
+        "applicationStartPort": {
+            "type": "int"
+        },
+        "applicationEndPort": {
+            "type": "int"
+        },
+        "serviceFabricUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Service fabric runtime download url."
+            }
+        },
+        "scriptBaseUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Scripts base url"
+            }
+        }
+    },
+    "variables": {
+
+        "apiVersion": {
+            "vmssApiVersion": "2016-03-30"
+        },
+
+        "location": "[resourceGroup().location]",
+        "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
+        "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
+        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]",
+        "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.Unsecure.MultiMachine.json')]",
+
+        "deploymentNodeIndex": "0"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('apiVersion').vmssApiVersion]",
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "name": "[parameters('vmScaleSetName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [],
+            "properties": {
+                "overprovision": "[parameters('overProvision')]",
+                "upgradePolicy": {
+                    "mode": "Automatic"
+                },
+                "virtualMachineProfile": {
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[parameters('nicName')]",
+                                "properties": {
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "[parameters('ipConfigName')]",
+                                            "properties": {
+                                                "loadBalancerBackendAddressPools": [
+                                                    {
+                                                        "id": "[parameters('lbPoolID')]"
+                                                    }
+                                                ],
+                                                "loadBalancerInboundNatPools": [
+                                                    {
+                                                        "id": "[parameters('lbNatPoolID')]"
+                                                    }
+                                                ],
+                                                "subnet": {
+                                                    "id": "[parameters('subnetID')]"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "primary": true
+                                }
+                            }
+                        ]
+                    },
+                    "osProfile": {
+                        "adminPassword": "[parameters('adminPassword')]",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "computernamePrefix": "[parameters('vmNodeTypeName')]"
+                    },
+                    "storageProfile": {
+                        "imageReference": {
+                            "publisher": "[parameters('vmImagePublisher')]",
+                            "offer": "[parameters('vmImageOffer')]",
+                            "sku": "[parameters('vmImageSku')]",
+                            "version": "[parameters('vmImageVersion')]"
+                        },
+                        "osDisk": {
+                            "name": "[parameters('osDiskName')]",
+                            "caching": "ReadOnly",
+                            "createOption": "FromImage",
+                            "vhdContainers": [
+                                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, parameters('vhdContainerName'))]"
+                            ]
+                        }
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "PrepareServiceFabric",
+                                "properties": {
+                                    "publisher": "Microsoft.Compute",
+                                    "settings": {
+                                        "fileUris": [
+                                            "[variables('serviceFabricPrepareScriptUrl')]"
+                                        ]
+                                    },
+                                    "typeHandlerVersion": "1.8",
+                                    "autoUpgradeMinorVersion": true,
+                                    "protectedSettings": {
+                                        "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File PrepareServiceFabricDeployment.ps1"
+                                    },
+                                    "type": "CustomScriptExtension"
+                                }
+                            },
+                            {
+                                "name": "DeployServiceFabricCluster",
+                                "properties": {
+                                    "publisher": "Microsoft.Powershell",
+                                    "type": "DSC",
+                                    "typeHandlerVersion": "2.19",
+                                    "autoUpgradeMinorVersion": true,
+                                    "settings": {
+                                        "modulesUrl": "[variables('serviceFabricDeploymentModuleUrl')]",
+                                        "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
+                                        "properties": {
+                                            "DeploymentNodeIndex": "[variables('deploymentNodeIndex')]",
+                                            "InstanceCount": "[parameters('InstanceCount')]",
+                                            "ClusterName": "[parameters('clusterName')]",
+                                            "vmNodeTypeName": "[parameters('vmNodeTypeName')]",
+                                            "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
+                                            "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
+                                            "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
+                                            "ephemeralStartPort": "[parameters('ephemeralStartPort')]",
+                                            "ephemeralEndPort": "[parameters('ephemeralEndPort')]",
+                                            "applicationStartPort": "[parameters('applicationStartPort')]",
+                                            "applicationEndPort": "[parameters('applicationEndPort')]",
+                                            "ConfigPath": "[variables('serviceFabricConfigPath')]",
+                                            "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
+                                            "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
+                                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                                            "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
+                                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
+                                        }
+                                    },
+                                    "protectedSettings": {
+                                        "properties": {
+                                            "Credential": {
+                                                "Username": "[parameters('adminUsername')]",
+                                                "Password": "[parameters('adminPassword')]"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "sku": {
+                "name": "[parameters('vmNodeSize')]",
+                "capacity": "[parameters('instanceCount')]"
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]",
+                "displayName": "ServiceFabricCluster"
+            }
+        }
+    ],
+        "outputs": {
+        }
+    }
