@@ -178,8 +178,16 @@
                 # Deployment
 
                 Write-Verbose "Validating Service Fabric input configuration"
-                $output = .\TestConfiguration.ps1 -ClusterConfigFilePath $CofigFilePath -Verbose
-                Write-Verbose ($output | Out-String)
+                $output = .\ServiceFabric\TestConfiguration.ps1 -ClusterConfigFilePath $CofigFilePath -Verbose
+
+                $passStatus = $output | % {if($_ -like "Passed*"){$_}}
+                $del = " ", ":"
+                $configValidationresult = ($passStatus.Split($del, [System.StringSplitOptions]::RemoveEmptyEntries))[1]
+
+                if($configValidationresult -ne "True")
+                {
+                    throw ($output | Out-String)
+                }
 
                 Write-Verbose "Starting Service Fabric runtime deployment"
 				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA -Verbose
