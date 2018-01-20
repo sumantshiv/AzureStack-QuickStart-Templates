@@ -102,6 +102,18 @@
         "applicationEndPort": {
             "type": "int"
         },
+        "certificateStoreValue": {
+            "type": "string"
+        },
+        "certificateThumbprint": {
+            "type": "string"
+        },
+        "reverseProxyCertificateStoreValue": {
+            "type": "string"
+        },
+        "reverseProxyCertificateThumbprint": {
+            "type": "string"
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -239,7 +251,8 @@
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                                             "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
                                             "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
-                                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
+                                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]",
+
                                         }
                                     },
                                     "protectedSettings": {

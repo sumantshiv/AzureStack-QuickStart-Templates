@@ -119,6 +119,56 @@
                 "description": "Array of application ports to be opened (like [80, 8080, 8081])."
             }
         },
+        "sourceVaultValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Id of the key vault, is should be in the format of /subscriptions/<Sub ID>/resourceGroups/<Resource group name>/providers/Microsoft.KeyVault/vaults/<vault name>"
+            }
+        },
+        "certificateStoreValue": {
+            "type": "string",
+            "allowedValues": [
+                "My"
+            ],
+            "defaultValue": "My",
+            "metadata": {
+                "description": "The store name where the cert will be deployed in the virtual machine"
+            }
+        },
+        "certificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Certificate Thumbprint"
+            }
+        },
+        "certificateUrlValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
+        },
+        "reverseProxyCertificateStoreValue": {
+            "type": "string",
+            "allowedValues": [
+                "My"
+            ],
+            "defaultValue": "My",
+            "metadata": {
+                "description": "The store name where the cert will be deployed in the virtual machine"
+            }
+        },
+        "reverseProxyCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Reverse proxy Certificate Thumbprint"
+            }
+        },
+        "reverseProxyCertificateUrlValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -389,7 +439,24 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computernamePrefix": "[parameters('vmNodeTypeName')]"
+                        "computernamePrefix": "[parameters('vmNodeTypeName')]",
+                        "secrets": [
+                            {
+                                "sourceVault": {
+                                    "id": "[parameters('sourceVaultValue')]"
+                                },
+                                "vaultCertificates": [
+                                    {
+                                        "certificateStore": "[parameters('certificateStoreValue')]",
+                                        "certificateUrl": "[parameters('certificateUrlValue')]"
+                                    },
+                                    {
+                                        "certificateStore": "[parameters('reverseProxyCertificateStoreValue')]",
+                                        "certificateUrl": "[parameters('reverseProxyCertificateUrlValue')]"
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     "storageProfile": {
                         "imageReference": {
@@ -538,6 +605,18 @@
                     },
                     "applicationEndPort": {
                         "value": "[variables('applicationEndPort')]"
+                    },
+                    "certificateStoreValue": {
+                        "value": "[parameters('certificateStoreValue')]"
+                    },
+                    "certificateThumbprint": {
+                        "value": "[parameters('certificateThumbprint')]"
+                    },
+                    "reverseProxyCertificateStoreValue": {
+                        "value": "[parameters('reverseProxyCertificateStoreValue')]"
+                    },
+                    "reverseProxyCertificateThumbprint": {
+                        "value": "[parameters('reverseProxyCertificateThumbprint')]"
                     },
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"
