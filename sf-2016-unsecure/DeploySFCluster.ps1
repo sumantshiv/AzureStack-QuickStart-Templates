@@ -171,11 +171,15 @@
                 Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
 				$configContent | Out-File $CofigFilePath
 
-                Write-Verbose "Downloading Service Fabric runtime from: '$Using:serviceFabricUrl'"
+                Write-Verbose "Downloading Service Fabric deployment package from: '$Using:serviceFabricUrl'"
 				Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
                 
                 # Deployment
+
+                Write-Verbose "Validating Service Fabric input configuration"
+                $output = .\TestConfiguration.ps1 -ClusterConfigFilePath $CofigFilePath -Verbose
+                Write-Verbose ($output | Out-String)
 
                 Write-Verbose "Starting Service Fabric runtime deployment"
 				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA -Verbose
@@ -238,7 +242,6 @@
                     {
                         Write-Verbose "Service Fabric cluster is healthy." 
                         $isHealthy = $true
-                        break
                     }
                 }
 
@@ -262,8 +265,7 @@
                         if($upgradeStatus -eq "RollingForwardCompleted")
                         {
                             Write-Verbose "Expected service Fabric upgrade status '$upgradeStatus' set." 
-                            $upgradeComplete = $true    
-                            break
+                            $upgradeComplete = $true
                         }
                         else
                         {
