@@ -132,7 +132,7 @@
 					    $IpStartBytes[3] = $IpStartBytes[3] + $i
 					    $ip = [IPAddress]($IpStartBytes)
 					
-                        $fdIndex = $i + 1
+                        $fdIndex = $scaleSetDecimalIndex + 1
                     
 					    $nodeName = Invoke-Command -ScriptBlock {hostname} -ComputerName "$($ip.IPAddressToString)"
 
@@ -142,7 +142,7 @@
                         $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
                         $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
                         $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
-                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$i"
+                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$scaleSetDecimalIndex"
 
                         Write-Verbose "Adding Node to configuration: '$nodeName'"
 					    $sfnodes += $node
