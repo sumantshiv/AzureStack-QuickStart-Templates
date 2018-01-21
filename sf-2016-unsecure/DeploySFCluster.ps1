@@ -76,11 +76,9 @@
 
                 # Get the index of current node and match it with the index of required deployment node.
                 $alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-
-                $base36Num = $env:COMPUTERNAME.Substring(($using:vmNodeTypeName).Length)
-                $base36Num = $base36Num.tolower()                
                 
-                $inputarray = $base36Num.tochararray()
+                $base36Num = $env:COMPUTERNAME.Substring(($using:vmNodeTypeName).Length)
+                $inputarray = $base36Num.tolower().tochararray()
                 [array]::reverse($inputarray)
                 
                 [long]$scaleSetDecimalIndex=0
@@ -131,10 +129,23 @@
 					    $IpStartBytes = $startNodeIpAddress.GetAddressBytes()
 					    $IpStartBytes[3] = $IpStartBytes[3] + $i
 					    $ip = [IPAddress]($IpStartBytes)
-					
-                        $fdIndex = $scaleSetDecimalIndex + 1
                     
 					    $nodeName = Invoke-Command -ScriptBlock {hostname} -ComputerName "$($ip.IPAddressToString)"
+
+                        $base36Num = $nodeName.ToString().Substring(($using:vmNodeTypeName).Length)
+                        $inputarray = $base36Num.tolower().tochararray()
+                        [array]::reverse($inputarray)
+                
+                        [long]$nodeScaleSetDecimalIndex=0
+                        $pos=0
+
+                        foreach ($c in $inputarray)
+                        {
+                            $nodeScaleSetDecimalIndex += $alphabet.IndexOf($c) * [long][Math]::Pow(36, $pos)
+                            $pos++
+                        }
+
+                        $fdIndex = $nodeScaleSetDecimalIndex + 1
 
                         $node = New-Object PSObject 
 					
@@ -142,7 +153,7 @@
                         $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
                         $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
                         $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
-                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$scaleSetDecimalIndex"
+                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$nodeScaleSetDecimalIndex"
 
                         Write-Verbose "Adding Node to configuration: '$nodeName'"
 					    $sfnodes += $node
