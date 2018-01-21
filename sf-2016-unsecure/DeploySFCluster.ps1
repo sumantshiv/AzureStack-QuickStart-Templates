@@ -75,7 +75,7 @@
                 Get-NetFirewallRule -DisplayGroup 'Network Discovery' | Set-NetFirewallRule -Profile 'Private, Public' -Enabled true
 
                 # Get the index of current node and match it with the index of required deployment node.
-                $scaleSetDecimalIndex = [Convert]::ToInt64($env:COMPUTERNAME.Substring(($using:vmNodeTypeName).Length))
+                $scaleSetDecimalIndex = [Convert]::ToInt64($env:COMPUTERNAME.Substring(($using:vmNodeTypeName).Length), 16)
 
                 # Return in case the current node is not the deployment node, else continue with SF deployment.
                 if($scaleSetDecimalIndex -ne $using:DeploymentNodeIndex)
