@@ -54,10 +54,7 @@
     [string] $DiagStoreAccountBlobUri,
 
     [Parameter(Mandatory = $true)]
-    [string] $DiagStoreAccountTableUri,
-    
-    [Parameter(Mandatory = $true)]
-    [string] $nodeNamePrefix
+    [string] $DiagStoreAccountTableUri
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -78,7 +75,7 @@
                 Get-NetFirewallRule -DisplayGroup 'Network Discovery' | Set-NetFirewallRule -Profile 'Private, Public' -Enabled true
 
                 # Get the index of current node and match it with the index of required deployment node.
-                $scaleSetDecimalIndex = [Convert]::ToInt64($env:COMPUTERNAME.Substring(($using:nodeNamePrefix).Length))
+                $scaleSetDecimalIndex = [Convert]::ToInt64($env:COMPUTERNAME.Substring(($using:vmNodeTypeName).Length))
 
                 # Return in case the current node is not the deployment node, else continue with SF deployment.
                 if($scaleSetDecimalIndex -ne $using:DeploymentNodeIndex)
@@ -111,8 +108,7 @@
 
                 try
                 {
-                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value * -Force    
-                    $cred = New-Object System.Management.Automation.PSCredential (($Using:Credential).UserName, ($Using:Credential).Password)
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value * -Force
 
                     while($i -lt $using:InstanceCount)
                     {
@@ -123,11 +119,11 @@
 					
                         $fdIndex = $i + 1
                     
-					    $nodeName = Invoke-Command -ScriptBlock {hostname} -ComputerName $ip.IPAddressToString -Credential $cred
+					    $nodeName = Invoke-Command -ScriptBlock {hostname} -ComputerName "$($ip.IPAddressToString)"
 
                         $node = New-Object PSObject 
 					
-					    $node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $nodeName
+					    $node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $($nodeName).ToString()
                         $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
                         $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
                         $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
