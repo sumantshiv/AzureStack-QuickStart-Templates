@@ -57,10 +57,7 @@
     [string] $DiagStoreAccountTableUri,
 
     [Parameter(Mandatory = $true)]
-    [string] $clusterEndpoint,
-
-    [Parameter(Mandatory = $true)]
-    [string] $nodeNamePrefix
+    [string] $clusterEndpoint
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -78,9 +75,25 @@
                 # Enable File and Printer Sharing for Network Discovery (Port 445)
                 Write-Verbose "Opening TCP firewall port 445 for networking."
                 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
+                Get-NetFirewallRule -DisplayGroup 'Network Discovery' | Set-NetFirewallRule -Profile 'Private, Public' -Enabled true
 
                 # Get the index of current node and match it with the index of required deployment node.
-                $scaleSetDecimalIndex = [Convert]::ToInt64($env:COMPUTERNAME.Substring(($using:nodeNamePrefix).Length))                
+                $alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+                $base36Num = $env:COMPUTERNAME.Substring(($using:vmNodeTypeName).Length)
+                $base36Num = $base36Num.tolower()                
+                
+                $inputarray = $base36Num.tochararray()
+                [array]::reverse($inputarray)
+                
+                [long]$scaleSetDecimalIndex=0
+                $pos=0
+
+                foreach ($c in $inputarray)
+                {
+                    $scaleSetDecimalIndex += $alphabet.IndexOf($c) * [long][Math]::Pow(36, $pos)
+                    $pos++
+                }
 
                 # Check if this is not the deployment node:
                 if($scaleSetDecimalIndex -ne $using:DeploymentNodeIndex)
@@ -112,11 +125,20 @@
                     }
 
                     # Add Node to the cluster.
-                    Write-Verbose "Current node is not part of the cluster. Adding node: '$($env:COMPUTERNAME)'."
+                    Write-Verbose "Current node is not part of the cluster. Adding node: '$($env:COMPUTERNAME)'."                    
+                    
+                    # Collect Node details
+                    $nodeName = $env:COMPUTERNAME
+                    $nodeIpAddressLable = (Get-NetIPAddress).IPv4Address | ? {$_ -ne "" -and $_ -ne "127.0.0.1"}
+                    $nodeIpAddress = [IPAddress](([String]$startNodeIpAddressLable).Trim(' '))
+                    Write-Verbose "Node IPAddress: '$nodeIpAddress'"
 
-                    # Download the Service fabric deployment package. 
+                    $fdIndex = $scaleSetDecimalIndex + 1
+                    $faultDomain = "fd:/dc$fdIndex/r0"
 
-                    # Store setup files on Temp disk.
+                    $upgradeDomain = "UD$scaleSetDecimalIndex"
+
+                    # Download the Service fabric deployment package. Store setup files on Temp disk.
                     $setupDir = "D:\SFSetup"
 				    New-Item -Path $setupDir -ItemType Directory -Force
 				    cd $setupDir
@@ -125,14 +147,29 @@
 				    Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				    Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
 
-                    
-                    # Collect Node details
-                    
-                    # Download SF
+                    # Get cluster health and wait for upgrade status to be completed. 
 
-                    # Add Node
+                    # Adding the Node
+                    Write-Verbose "Adding node '$nodeName' to Service fabric Cluster."
+				    $output = .\ServiceFabric\AddNode.ps1 -NodeName $nodeName `
+                                                          -NodeType $using:vmNodeTypeName `
+                                                          -NodeIPAddressorFQDN $nodeIpAddress `
+                                                          -ExistingClientConnectionEndpoint $Using:clusterEndpoint `
+                                                          -UpgradeDomain $upgradeDomain `
+                                                          -FaultDomain $faultDomain `
+                                                          -AcceptEULA
+
+                    Write-Verbose ($output | Out-String)
 
                     # Validate add
+
+                    $sfNodes = Get-ServiceFabricNode | % {$_.NodeName}
+                        
+                    if(-not $sfNodes.Contains($env:COMPUTERNAME))
+                    {
+                         throw "Service fabric node '$nodeName' could not be added. `n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$nodeName'."
+                        
+                    }
                     
                     # Update Configuration
 
@@ -161,27 +198,39 @@
 
 				$i = 0
 				$sfnodes = @()
-				while($i -lt $using:InstanceCount){
 
-					$IpStartBytes = $startNodeIpAddress.GetAddressBytes()
-					$IpStartBytes[3] = $IpStartBytes[3] + $i
-					$ip = [IPAddress]($IpStartBytes)
+				try
+                {
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value * -Force
+
+                    while($i -lt $using:InstanceCount)
+                    {
+
+					    $IpStartBytes = $startNodeIpAddress.GetAddressBytes()
+					    $IpStartBytes[3] = $IpStartBytes[3] + $i
+					    $ip = [IPAddress]($IpStartBytes)
 					
-                    $fdIndex = $i + 1 
+                        $fdIndex = $scaleSetDecimalIndex + 1
                     
-					$nodeName = "$nodeNamePrefix" + "$i"
-					$node = New-Object PSObject 
-					
-					$node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $nodeName
-                    $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
-                    $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
-                    $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
-                    $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$i"
+					    $nodeName = Invoke-Command -ScriptBlock {hostname} -ComputerName "$($ip.IPAddressToString)"
 
-                    Write-Verbose "Adding Node to configuration: '$nodeName'"
-					$sfnodes += $node
-					$i++
-				}
+                        $node = New-Object PSObject 
+					
+					    $node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $($nodeName).ToString()
+                        $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
+                        $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
+                        $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
+                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$scaleSetDecimalIndex"
+
+                        Write-Verbose "Adding Node to configuration: '$nodeName'"
+					    $sfnodes += $node
+					    $i++
+				    }
+                }
+                finally
+                {
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value "" -Force    
+                }
 
 				$configContent.nodes = $sfnodes
 
