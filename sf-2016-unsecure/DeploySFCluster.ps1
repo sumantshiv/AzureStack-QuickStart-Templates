@@ -3,7 +3,7 @@
     param
     (
     [Parameter(Mandatory = $false)]
-    [String] $DeploymentNodeIndex = "0",
+    [Int] $DeploymentNodeIndex = 0,
 
     [Parameter(Mandatory = $true)]
     [int] $InstanceCount,
@@ -54,7 +54,13 @@
     [string] $DiagStoreAccountBlobUri,
 
     [Parameter(Mandatory = $true)]
-    [string] $DiagStoreAccountTableUri
+    [string] $DiagStoreAccountTableUri,
+
+    [Parameter(Mandatory = $true)]
+    [string] $clusterEndpoint,
+
+    [Parameter(Mandatory = $true)]
+    [string] $nodeNamePrefix
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -74,16 +80,65 @@
                 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
 
                 # Get the index of current node and match it with the index of required deployment node.
-                $scaleSetIndex = $env:COMPUTERNAME.Substring($env:COMPUTERNAME.Length-1, 1)
+                $scaleSetDecimalIndex = [Convert]::ToInt64($env:COMPUTERNAME.Substring(($using:nodeNamePrefix).Length))                
 
-                $nodeNamePrefix = $env:COMPUTERNAME.Substring(0,$env:COMPUTERNAME.Length-1)
-
-                # Return in case the current node is not the deployment node, else continue with SF deployment.
-                if($scaleSetIndex -ne $using:DeploymentNodeIndex)
+                # Check if this is not the deployment node:
+                if($scaleSetDecimalIndex -ne $using:DeploymentNodeIndex)
                 {
-                    Write-Verbose "Service Fabric deployment runs on Node with index: '$using:DeploymentNodeIndex'."
+                    # Check if cluster already exists (Add-Node scenario)
+                    try
+                    {
+                        Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
+                        $connection = Connect-ServiceFabricCluster -ConnectionEndpoint $clusterEndpoint    
+                    }
+                    catch
+                    {}                    
+                    
+                    if( -not $connection -or -not $connection[0])
+                    {
+                        # No cluster exists. Wait for initial deployment to complete.
+                        Write-Verbose "Service Fabric deployment runs on Node with index: '$using:DeploymentNodeIndex'."
+                        return
+                    }
+
+                    Write-Verbose "Service Fabric cluster already exists. Checking if '$($env:COMPUTERNAME)' already a member node."                         
+
+                    $sfNodes = Get-ServiceFabricNode | % {$_.NodeName}
+                        
+                    if($sfNodes.Contains($env:COMPUTERNAME))
+                    {
+                        Write-Verbose "Current node is already a part of the cluster. No action needed."
+                        return
+                    }
+
+                    # Add Node to the cluster.
+                    Write-Verbose "Current node is not part of the cluster. Adding node: '$($env:COMPUTERNAME)'."
+
+                    # Download the Service fabric deployment package. 
+
+                    # Store setup files on Temp disk.
+                    $setupDir = "D:\SFSetup"
+				    New-Item -Path $setupDir -ItemType Directory -Force
+				    cd $setupDir
+                    
+                    Write-Verbose "Downloading Service Fabric deployment package from: '$Using:serviceFabricUrl'"
+				    Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
+				    Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
+
+                    
+                    # Collect Node details
+                    
+                    # Download SF
+
+                    # Add Node
+
+                    # Validate add
+                    
+                    # Update Configuration
+
                     return
                 }
+                
 
                 Write-Verbose "Starting service fabric deployment on Node: '$env:COMPUTERNAME'."
 
