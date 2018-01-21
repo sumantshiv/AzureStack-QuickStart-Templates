@@ -3,7 +3,7 @@
     param
     (
     [Parameter(Mandatory = $false)]
-    [String] $DeploymentNodeIndex = "0",
+    [Int] $DeploymentNodeIndex = 0,
 
     [Parameter(Mandatory = $true)]
     [int] $InstanceCount,
@@ -54,7 +54,10 @@
     [string] $DiagStoreAccountBlobUri,
 
     [Parameter(Mandatory = $true)]
-    [string] $DiagStoreAccountTableUri
+    [string] $DiagStoreAccountTableUri,
+    
+    [Parameter(Mandatory = $true)]
+    [string] $nodeNamePrefix
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -72,14 +75,13 @@
                 # Enable File and Printer Sharing for Network Discovery (Port 445)
                 Write-Verbose "Opening TCP firewall port 445 for networking."
                 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
+                Get-NetFirewallRule -DisplayGroup 'Network Discovery' | Set-NetFirewallRule -Profile 'Private, Public' -Enabled true
 
                 # Get the index of current node and match it with the index of required deployment node.
-                $scaleSetIndex = $env:COMPUTERNAME.Substring($env:COMPUTERNAME.Length-1, 1)
-
-                $nodeNamePrefix = $env:COMPUTERNAME.Substring(0,$env:COMPUTERNAME.Length-1)
+                $scaleSetDecimalIndex = [Convert]::ToInt64($env:COMPUTERNAME.Substring(($using:nodeNamePrefix).Length))
 
                 # Return in case the current node is not the deployment node, else continue with SF deployment.
-                if($scaleSetIndex -ne $using:DeploymentNodeIndex)
+                if($scaleSetDecimalIndex -ne $using:DeploymentNodeIndex)
                 {
                     Write-Verbose "Service Fabric deployment runs on Node with index: '$using:DeploymentNodeIndex'."
                     return
@@ -106,27 +108,40 @@
 
 				$i = 0
 				$sfnodes = @()
-				while($i -lt $using:InstanceCount){
 
-					$IpStartBytes = $startNodeIpAddress.GetAddressBytes()
-					$IpStartBytes[3] = $IpStartBytes[3] + $i
-					$ip = [IPAddress]($IpStartBytes)
+                try
+                {
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value * -Force    
+                    $cred = New-Object System.Management.Automation.PSCredential (($Using:Credential).UserName, ($Using:Credential).Password)
+
+                    while($i -lt $using:InstanceCount)
+                    {
+
+					    $IpStartBytes = $startNodeIpAddress.GetAddressBytes()
+					    $IpStartBytes[3] = $IpStartBytes[3] + $i
+					    $ip = [IPAddress]($IpStartBytes)
 					
-                    $fdIndex = $i + 1 
+                        $fdIndex = $i + 1
                     
-					$nodeName = "$nodeNamePrefix" + "$i"
-					$node = New-Object PSObject 
-					
-					$node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $nodeName
-                    $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
-                    $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
-                    $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
-                    $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$i"
+					    $nodeName = Invoke-Command -ScriptBlock {hostname} -ComputerName $ip.IPAddressToString -Credential $cred
 
-                    Write-Verbose "Adding Node to configuration: '$nodeName'"
-					$sfnodes += $node
-					$i++
-				}
+                        $node = New-Object PSObject 
+					
+					    $node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $nodeName
+                        $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
+                        $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
+                        $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
+                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$i"
+
+                        Write-Verbose "Adding Node to configuration: '$nodeName'"
+					    $sfnodes += $node
+					    $i++
+				    }
+                }
+                finally
+                {
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value "" -Force    
+                }
 
 				$configContent.nodes = $sfnodes
 

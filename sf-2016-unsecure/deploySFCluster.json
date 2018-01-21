@@ -127,7 +127,7 @@
         "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]",
         "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.Unsecure.MultiMachine.json')]",
 
-        "deploymentNodeIndex": "0"
+        "deploymentNodeIndex": 0
     },
     "resources": [
         {
@@ -239,7 +239,8 @@
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                                             "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
                                             "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
-                                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
+                                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]",
+                                            "nodeNamePrefix": "[parameters('vmNodeTypeName')]"
                                         }
                                     },
                                     "protectedSettings": {
