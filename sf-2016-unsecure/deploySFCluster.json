@@ -127,7 +127,7 @@
         "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]",
         "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.Unsecure.MultiMachine.json')]",
 
-        "deploymentNodeIndex": "0"
+        "deploymentNodeIndex": 0
     },
     "resources": [
         {
