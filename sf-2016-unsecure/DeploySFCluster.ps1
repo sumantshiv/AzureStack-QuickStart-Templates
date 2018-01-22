@@ -189,7 +189,7 @@
 
                         Write-Verbose "Adding Node to configuration: '$nodeName'"
 
-                        $sfNodes = $configContent.Nodes
+                        [String[]] $sfNodes = $configContent.Nodes
                         $sfnodes += $node
 
                         $configContent = ConvertTo-Json $configContent -Depth 99
@@ -201,7 +201,7 @@
                         Start-ServiceFabricClusterConfigurationUpgrade -ClusterConfigPath $CofigFilePath
 
                         # Upgrade state validation
-                        $minutesToWait = 5 * $InstanceCount
+                        $minutesToWait = 5 * $sfnodes.Count
                         $timeoutTime = (Get-Date).AddMinutes($minutesToWait)
                         $upgradeComplete = $false
                         $lastException
