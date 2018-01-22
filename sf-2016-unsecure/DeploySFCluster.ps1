@@ -114,7 +114,7 @@
 
                     $sfNodes = Get-ServiceFabricNode | % {$_.NodeName}
                         
-                    if($sfNodes.Contains($env:COMPUTERNAME))
+                    if($sfNodes -contains $env:COMPUTERNAME)
                     {
                         Write-Verbose "Current node is already a part of the cluster. No action needed."
                         return
@@ -163,7 +163,7 @@
 
                         $sfNodes = Get-ServiceFabricNode | % {$_.NodeName}
                         
-                        if($sfNodes.Contains($env:COMPUTERNAME))
+                        if($sfNodes -contains $env:COMPUTERNAME)
                         {
                            Write-Verbose "Node '$nodeName' succesfully added to the Service Fabric cluster."
                         }
