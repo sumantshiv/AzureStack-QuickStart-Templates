@@ -456,7 +456,7 @@
                 },
                 "parameters": {
                     "clusterName": {
-                        "value": "parameters('clusterName')]"
+                        "value": "[parameters('clusterName')]"
                     },
                     "vmScaleSetName": {
                         "value": "[variables('imageConfig').vmssUniqueName]"
