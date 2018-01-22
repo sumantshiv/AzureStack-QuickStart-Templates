@@ -3,7 +3,7 @@
     param
     (
     [Parameter(Mandatory = $false)]
-    [String] $DeploymentNodeIndex = "0",
+    [Int] $DeploymentNodeIndex = 0,
 
     [Parameter(Mandatory = $true)]
     [int] $InstanceCount,
@@ -72,14 +72,26 @@
                 # Enable File and Printer Sharing for Network Discovery (Port 445)
                 Write-Verbose "Opening TCP firewall port 445 for networking."
                 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
+                Get-NetFirewallRule -DisplayGroup 'Network Discovery' | Set-NetFirewallRule -Profile 'Private, Public' -Enabled true
 
                 # Get the index of current node and match it with the index of required deployment node.
-                $scaleSetIndex = $env:COMPUTERNAME.Substring($env:COMPUTERNAME.Length-1, 1)
+                $alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
 
-                $nodeNamePrefix = $env:COMPUTERNAME.Substring(0,$env:COMPUTERNAME.Length-1)
+                $base36Num = $env:COMPUTERNAME.Substring(($using:vmNodeTypeName).Length)
+                $inputarray = $base36Num.tolower().tochararray()
+                [array]::reverse($inputarray)
+                
+                [long]$scaleSetDecimalIndex=0
+                $pos=0
+
+                foreach ($c in $inputarray)
+                {
+                    $scaleSetDecimalIndex += $alphabet.IndexOf($c) * [long][Math]::Pow(36, $pos)
+                    $pos++
+                }
 
                 # Return in case the current node is not the deployment node, else continue with SF deployment.
-                if($scaleSetIndex -ne $using:DeploymentNodeIndex)
+                if($scaleSetDecimalIndex -ne $using:DeploymentNodeIndex)
                 {
                     Write-Verbose "Service Fabric deployment runs on Node with index: '$using:DeploymentNodeIndex'."
                     return
@@ -106,27 +118,52 @@
 
 				$i = 0
 				$sfnodes = @()
-				while($i -lt $using:InstanceCount){
+				
+                try
+                {
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value * -Force
 
-					$IpStartBytes = $startNodeIpAddress.GetAddressBytes()
-					$IpStartBytes[3] = $IpStartBytes[3] + $i
-					$ip = [IPAddress]($IpStartBytes)
-					
-                    $fdIndex = $i + 1 
+                    while($i -lt $using:InstanceCount)
+                    {
+
+					    $IpStartBytes = $startNodeIpAddress.GetAddressBytes()
+					    $IpStartBytes[3] = $IpStartBytes[3] + $i
+					    $ip = [IPAddress]($IpStartBytes)
                     
-					$nodeName = "$nodeNamePrefix" + "$i"
-					$node = New-Object PSObject 
-					
-					$node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $nodeName
-                    $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
-                    $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
-                    $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
-                    $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$i"
+					    $nodeName = Invoke-Command -ScriptBlock {hostname} -ComputerName "$($ip.IPAddressToString)"
 
-                    Write-Verbose "Adding Node to configuration: '$nodeName'"
-					$sfnodes += $node
-					$i++
-				}
+                        $base36Num = $nodeName.ToString().Substring(($using:vmNodeTypeName).Length)
+                        $inputarray = $base36Num.tolower().tochararray()
+                        [array]::reverse($inputarray)
+                
+                        [long]$nodeScaleSetDecimalIndex=0
+                        $pos=0
+
+                        foreach ($c in $inputarray)
+                        {
+                            $nodeScaleSetDecimalIndex += $alphabet.IndexOf($c) * [long][Math]::Pow(36, $pos)
+                            $pos++
+                        }
+
+                        $fdIndex = $nodeScaleSetDecimalIndex + 1
+
+                        $node = New-Object PSObject 
+					
+					    $node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $($nodeName).ToString()
+                        $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $ip.IPAddressToString
+                        $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
+                        $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value "fd:/dc$fdIndex/r0"
+                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value "UD$nodeScaleSetDecimalIndex"
+
+                        Write-Verbose "Adding Node to configuration: '$nodeName'"
+					    $sfnodes += $node
+					    $i++
+				    }
+                }
+                finally
+                {
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value "" -Force    
+                }
 
 				$configContent.nodes = $sfnodes
 
@@ -171,11 +208,23 @@
                 Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
 				$configContent | Out-File $CofigFilePath
 
-                Write-Verbose "Downloading Service Fabric runtime from: '$Using:serviceFabricUrl'"
+                Write-Verbose "Downloading Service Fabric deployment package from: '$Using:serviceFabricUrl'"
 				Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
 				Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
                 
                 # Deployment
+
+                Write-Verbose "Validating Service Fabric input configuration"
+                $output = .\ServiceFabric\TestConfiguration.ps1 -ClusterConfigFilePath $CofigFilePath -Verbose
+
+                $passStatus = $output | % {if($_ -like "Passed*"){$_}}
+                $del = " ", ":"
+                $configValidationresult = ($passStatus.Split($del, [System.StringSplitOptions]::RemoveEmptyEntries))[1]
+
+                if($configValidationresult -ne "True")
+                {
+                    throw ($output | Out-String)
+                }
 
                 Write-Verbose "Starting Service Fabric runtime deployment"
 				$output = .\ServiceFabric\CreateServiceFabricCluster.ps1 -ClusterConfigFilePath $CofigFilePath -AcceptEULA -Verbose
@@ -238,7 +287,6 @@
                     {
                         Write-Verbose "Service Fabric cluster is healthy." 
                         $isHealthy = $true
-                        break
                     }
                 }
 
@@ -262,8 +310,7 @@
                         if($upgradeStatus -eq "RollingForwardCompleted")
                         {
                             Write-Verbose "Expected service Fabric upgrade status '$upgradeStatus' set." 
-                            $upgradeComplete = $true    
-                            break
+                            $upgradeComplete = $true
                         }
                         else
                         {
