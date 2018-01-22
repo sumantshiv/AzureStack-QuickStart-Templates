@@ -97,151 +97,104 @@
                 $isMasterNode = $scaleSetDecimalIndex -eq $using:DeploymentNodeIndex
 
                 # Check if Cluster already exists
-                try
+                Set-Item WSMan:\localhost\Client\TrustedHosts -Value * -Force
+                try                
                 {
-                    Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
-                    $connection = Connect-ServiceFabricCluster -ConnectionEndpoint $clientConnectionEndpoint    
-                }
-                catch
-                {}    
-                
-                $clusterExists = $connection -and $connection[0]
-
-                if($clusterExists)
-                {
-                    # Check if node exists in cluster
-                    Write-Verbose "Service Fabric cluster already exists. Checking if '$($env:COMPUTERNAME)' already a member node."                         
-
-                    $sfNodes = Get-ServiceFabricNode | % {$_.NodeName}
-                        
-                    if($sfNodes -contains $env:COMPUTERNAME)
+                    try
                     {
-                        Write-Verbose "Current node is already a part of the cluster. No action needed."
-                        return
+                        $masterNodeName = $Using:vmNodeTypeName + $($using:DeploymentNodeIndex).ToString().PadLeft(6, "0")
+
+                        Write-Verbose "Master node name: '$masterNodeName'."                    
+                    
+                        $session = New-PSSession -ComputerName $masterNodeName
+
+                        Write-Verbose "Session Created: $session"
+                    
+                        $connection = Invoke-Command -Session $session -ScriptBlock { Connect-ServiceFabricCluster}
                     }
+                    catch
+                    {
+                        Write-Verbose "$_"
+                    }    
+                
+                    $clusterExists = $connection -and $connection[0]
 
-                    if(-not $isMasterNode)
-                                                                                                                                                                                                                                                                                                                                                                                                                            {
-                        # Add Node to the cluster.
-                        Write-Verbose "Current node is not part of the cluster. Adding node: '$($env:COMPUTERNAME)'."                    
-                    
-                        # Collect Node details
-                        $nodeName = $env:COMPUTERNAME
-                        $nodeIpAddressLable = (Get-NetIPAddress).IPv4Address | ? {$_ -ne "" -and $_ -ne "127.0.0.1"}
-                        $nodeIpAddress = [IPAddress](([String]$startNodeIpAddressLable).Trim(' '))
-                        Write-Verbose "Node IPAddress: '$nodeIpAddress'"
+                    if($clusterExists)
+                    {
+                        # Check if node exists in cluster
+                        Write-Verbose "Service Fabric cluster already exists. Checking if '$($env:COMPUTERNAME)' already a member node."                         
 
-                        $fdIndex = $scaleSetDecimalIndex + 1
-                        $faultDomain = "fd:/dc$fdIndex/r0"
-
-                        $upgradeDomain = "UD$scaleSetDecimalIndex"
-
-                        # Download the Service fabric deployment package. Store setup files on Temp disk.
-                        $setupDir = "D:\SFSetup"
-				        New-Item -Path $setupDir -ItemType Directory -Force
-				        cd $setupDir
-                    
-                        Write-Verbose "Downloading Service Fabric deployment package from: '$Using:serviceFabricUrl'"
-				        Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
-				        Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
-
-                        # Get cluster health and wait for upgrade status to be completed. 
-
-                        # Adding the Node
-                        Write-Verbose "Adding node '$nodeName' to Service fabric Cluster."
-				        $output = .\ServiceFabric\AddNode.ps1 -NodeName $nodeName `
-                                                              -NodeType $using:vmNodeTypeName `
-                                                              -NodeIPAddressorFQDN $nodeIpAddress `
-                                                              -ExistingClientConnectionEndpoint $Using:clientConnectionEndpoint `
-                                                              -UpgradeDomain $upgradeDomain `
-                                                              -FaultDomain $faultDomain `
-                                                              -AcceptEULA
-
-                        Write-Verbose ($output | Out-String)
-
-                        # Validate add
-
-                        $sfNodes = Get-ServiceFabricNode | % {$_.NodeName}
+                        $sfNodes = Invoke-Command -Session $session -ScriptBlock { Get-ServiceFabricNode | % {$_.NodeName} }
                         
                         if($sfNodes -contains $env:COMPUTERNAME)
                         {
-                           Write-Verbose "Node '$nodeName' succesfully added to the Service Fabric cluster."
+                            Write-Verbose "Current node is already a part of the cluster. No action needed."
+                            return
+                        }
+
+                        if(-not $isMasterNode)
+                                                                                                                                                                                                                                                                                                                                                                                                                                {
+                            # Add Node to the cluster.
+                            Write-Verbose "Current node is not part of the cluster. Adding node: '$($env:COMPUTERNAME)'."                    
+                    
+                            # Collect Node details
+                            $nodeName = $env:COMPUTERNAME
+                            $nodeIpAddressLable = (Get-NetIPAddress).IPv4Address | ? {$_ -ne "" -and $_ -ne "127.0.0.1"}
+                            $nodeIpAddress = [IPAddress](([String]$nodeIpAddressLable).Trim(' '))
+                            Write-Verbose "Node IPAddress: '$nodeIpAddress'"
+
+                            $fdIndex = $scaleSetDecimalIndex + 1
+                            $faultDomain = "fd:/dc$fdIndex/r0"
+
+                            $upgradeDomain = "UD$scaleSetDecimalIndex"
+
+                            # Download the Service fabric deployment package. Store setup files on Temp disk.
+                            $setupDir = "D:\SFSetup"
+				            New-Item -Path $setupDir -ItemType Directory -Force
+				            cd $setupDir
+                    
+                            Write-Verbose "Downloading Service Fabric deployment package from: '$Using:serviceFabricUrl'"
+				            Invoke-WebRequest -Uri $Using:serviceFabricUrl -OutFile (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -UseBasicParsing
+				            Expand-Archive (Join-Path -Path $setupDir -ChildPath ServiceFabric.zip) -DestinationPath (Join-Path -Path $setupDir -ChildPath ServiceFabric) -Force
+
+                            # Get cluster health and wait for upgrade status to be completed. 
+
+                            # Adding the Node
+                            Write-Verbose "Adding node '$nodeName' to Service fabric Cluster."
+				            $output = .\ServiceFabric\AddNode.ps1 -NodeName $nodeName `
+                                                                  -NodeType $using:vmNodeTypeName `
+                                                                  -NodeIPAddressorFQDN $nodeIpAddress `
+                                                                  -ExistingClientConnectionEndpoint $Using:clientConnectionEndpoint `
+                                                                  -UpgradeDomain $upgradeDomain `
+                                                                  -FaultDomain $faultDomain `
+                                                                  -AcceptEULA
+
+                            Write-Verbose ($output | Out-String)
+
+                            # Validate add
+
+                            $sfNodes = Invoke-Command -Session $session -ScriptBlock { Get-ServiceFabricNode | % {$_.NodeName} }
+                        
+                            if($sfNodes -contains $env:COMPUTERNAME)
+                            {
+                               Write-Verbose "Node '$nodeName' succesfully added to the Service Fabric cluster."
+                            }
+                            else
+                            {
+                                throw "Service fabric node '$nodeName' could not be added. `n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$nodeName'."
+                            }
                         }
                         else
                         {
-                            throw "Service fabric node '$nodeName' could not be added. `n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$nodeName'."
-                        }
-                    
-                        # Update Configuration
-
-                        $CofigFilePath = Join-Path -Path $setupDir -ChildPath 'ClusterConfig.json'
-                        Write-Verbose "Get Service fabric configuration from Cluster."
-                        $request = Get-ServiceFabricClusterConfiguration
-                        $configContent = ConvertFrom-Json  $request
-
-                        $node = New-Object PSObject 
-					
-					    $node | Add-Member -MemberType NoteProperty -Name "nodeName" -Value $($nodeName).ToString()
-                        $node | Add-Member -MemberType NoteProperty -Name "iPAddress" -Value $nodeIpAddress
-                        $node | Add-Member -MemberType NoteProperty -Name "nodeTypeRef" -Value "$using:vmNodeTypeName"
-                        $node | Add-Member -MemberType NoteProperty -Name "faultDomain" -Value $faultDomain
-                        $node | Add-Member -MemberType NoteProperty -Name "upgradeDomain" -Value $upgradeDomain
-
-                        Write-Verbose "Adding Node to configuration: '$nodeName'"
-
-                        [String[]] $sfNodes = $configContent.Nodes
-                        $sfnodes += $node
-
-                        $configContent = ConvertTo-Json $configContent -Depth 99
-				        Write-Verbose $configContent
-                        Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
-				        $configContent | Out-File $CofigFilePath
-                    
-                        Write-Verbose "Updating service fabric cluster configuration."
-                        Start-ServiceFabricClusterConfigurationUpgrade -ClusterConfigPath $CofigFilePath
-
-                        # Upgrade state validation
-                        $minutesToWait = 5 * $sfnodes.Count
-                        $timeoutTime = (Get-Date).AddMinutes($minutesToWait)
-                        $upgradeComplete = $false
-                        $lastException
-
-                        while((-not $upgradeComplete) -and ((Get-Date) -lt $timeoutTime))
-                        {
-                            try
-                            {
-                                $upgradeStatus = (Get-ServiceFabricClusterConfigurationUpgradeStatus).UpgradeState
-
-                                if($upgradeStatus -eq "RollingForwardCompleted")
-                                {
-                                    Write-Verbose "Expected service Fabric upgrade status '$upgradeStatus' set." 
-                                    $upgradeComplete = $true
-                                }
-                                else
-                                {
-                                    throw "Unexpected Upgrade status: '$upgradeStatus'."
-                                }
-                            }
-                            catch
-                            {
-                                $lastException = $_.Exception
-                                Write-Verbose "Upgrade status check failed because: $lastException. Retrying until $timeoutTime."
-                                Write-Verbose "Waiting for 60 seconds..."
-                                Start-Sleep -Seconds 60
-                            }
+                            throw "Master Node '$env:COMPUTERNAME' dropped out of cluster."
                         }
 
-                        if(-not $upgradeComplete)                
-                        {
-                            throw "Cluster validation failed with error: $lastException.`n Please check the detailed DSC logs and Service fabric deployment traces at: '$setupDir\ServiceFabric\DeploymentTraces' on the VM: '$env:ComputerName'."
-                        }
+                        return
                     }
-                    else
-                    {
-                        throw "Master Node '$env:COMPUTERNAME' dropped out of cluster."
-                    }
-
-                    return
+                }
+                finally
+                {
+                    Set-Item WSMan:\localhost\Client\TrustedHosts -Value "" -Force
                 }
 
                 # First time deployment in progress.
