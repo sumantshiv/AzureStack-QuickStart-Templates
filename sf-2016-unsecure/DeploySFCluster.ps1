@@ -57,7 +57,7 @@
     [string] $DiagStoreAccountTableUri,
 
     [Parameter(Mandatory = $true)]
-    [string] $clusterEndpoint
+    [string] $clientConnectionEndpoint
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -100,7 +100,7 @@
                 try
                 {
                     Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
-                    $connection = Connect-ServiceFabricCluster -ConnectionEndpoint $clusterEndpoint    
+                    $connection = Connect-ServiceFabricCluster -ConnectionEndpoint $clientConnectionEndpoint    
                 }
                 catch
                 {}    
@@ -152,7 +152,7 @@
 				        $output = .\ServiceFabric\AddNode.ps1 -NodeName $nodeName `
                                                               -NodeType $using:vmNodeTypeName `
                                                               -NodeIPAddressorFQDN $nodeIpAddress `
-                                                              -ExistingClientConnectionEndpoint $Using:clusterEndpoint `
+                                                              -ExistingClientConnectionEndpoint $Using:clientConnectionEndpoint `
                                                               -UpgradeDomain $upgradeDomain `
                                                               -FaultDomain $faultDomain `
                                                               -AcceptEULA

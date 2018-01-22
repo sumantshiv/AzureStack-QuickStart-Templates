@@ -539,6 +539,9 @@
                     "applicationEndPort": {
                         "value": "[variables('applicationEndPort')]"
                     },
+                    "clientConnectionEndpoint": {
+                        "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
+                    },
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"
                     },

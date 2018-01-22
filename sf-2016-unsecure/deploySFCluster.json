@@ -102,6 +102,9 @@
         "applicationEndPort": {
             "type": "int"
         },
+        "clientConnectionEndpoint": {
+            "type": "string"
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -234,6 +237,7 @@
                                             "ephemeralEndPort": "[parameters('ephemeralEndPort')]",
                                             "applicationStartPort": "[parameters('applicationStartPort')]",
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
+                                            "clientConnectionEndpoint": "[parameters('clientConnectionEndpoint')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
