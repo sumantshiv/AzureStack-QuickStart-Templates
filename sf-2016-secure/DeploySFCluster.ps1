@@ -54,7 +54,19 @@
     [string] $DiagStoreAccountBlobUri,
 
     [Parameter(Mandatory = $true)]
-    [string] $DiagStoreAccountTableUri
+    [string] $DiagStoreAccountTableUri,
+
+    [Parameter(Mandatory = $true)]
+    [string] $certificateStoreValue,
+
+    [Parameter(Mandatory = $true)]
+    [string] $certificateThumbprint,
+
+    [Parameter(Mandatory = $true)]
+    [string] $reverseProxyCertificateStoreValue,
+
+    [Parameter(Mandatory = $true)]
+    [string] $reverseProxyCertificateThumbprint
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -116,6 +128,7 @@
 
                 Write-Verbose "Start node IPAddress: '$startNodeIpAddress'"
 
+                # Adding Nodes to the configuration.
 				$i = 0
 				$sfnodes = @()
 				
@@ -167,6 +180,7 @@
 
 				$configContent.nodes = $sfnodes
 
+                # Adding Node Type to the configuration.
                 Write-Verbose "Creating node type '$Using:vmNodeTypeName'"
                 $nodeTypes =@()
                 
@@ -196,6 +210,7 @@
                 $nodeTypes += $nodeType
                 $configContent.properties.nodeTypes = $nodeTypes
 
+                # Adding Diagnostics store settings to the configuration.
                 Write-Verbose "Creating diagnostics share at: '$Using:DiagStoreAccountName' blob store"
 
                 $diagStoreConnectinString = "xstore:DefaultEndpointsProtocol=https;AccountName=$Using:DiagStoreAccountName;AccountKey=$Using:DiagStoreAccountKey;BlobEndpoint=$using:DiagStoreAccountBlobUri;TableEndpoint=$Using:DiagStoreAccountTableUri"
@@ -203,7 +218,18 @@
                 Write-Verbose "Setting diagnostics store to: '$diagStoreConnectinString'"
                 $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
 
-				$configContent = ConvertTo-Json $configContent -Depth 99
+                # Adding Security settings to the configuration.
+                $configContent.properties.security.ClusterCertificate.Thumbprint = $Using:certificateThumbprint
+                $configContent.properties.security.ClusterCertificate.X509StoreName = $Using:certificateStoreValue
+
+                $configContent.properties.security.ServerCertificate.Thumbprint = $Using:certificateThumbprint
+                $configContent.properties.security.ServerCertificate.X509StoreName = $Using:certificateStoreValue
+
+                $configContent.properties.security.ReverseProxyCertificate.Thumbprint = $Using:reverseProxyCertificateThumbprint
+                $configContent.properties.security.ReverseProxyCertificate.X509StoreName = $Using:reverseProxyCertificateStoreValue
+				
+                # Creating configuration json.
+                $configContent = ConvertTo-Json $configContent -Depth 99
 				Write-Verbose $configContent
                 Write-Verbose "Creating service fabric config file at: '$CofigFilePath'"
 				$configContent | Out-File $CofigFilePath

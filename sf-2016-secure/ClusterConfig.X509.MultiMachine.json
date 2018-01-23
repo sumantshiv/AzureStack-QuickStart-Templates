@@ -38,49 +38,18 @@
             "ClusterCredentialType": "X509",
             "ServerCredentialType": "X509",
             "CertificateInformation": {
-                "ClusterCertificateCommonNames": {
-                  "CommonNames": [
-                    {
-                      "CertificateCommonName": "[CertificateCommonName]",
-                      "CertificateIssuerThumbprint": "[Thumbprint1,Thumbprint2,Thumbprint3,...]"
-                    }
-                  ],
-                  "X509StoreName": "My"
-                },
-                "ServerCertificateCommonNames": {
-                  "CommonNames": [
-                    {
-                      "CertificateCommonName": "[CertificateCommonName]",
-                      "CertificateIssuerThumbprint": "[Thumbprint1,Thumbprint2,Thumbprint3,...]"
-                    }
-                  ],
-                  "X509StoreName": "My"
-                },
-                "ReverseProxyCertificateCommonNames": {
-                  "CommonNames": [
-                      {
-                        "CertificateCommonName": "[CertificateCommonName]"
-                      }
-                    ],
+                "ClusterCertificate": {
+                    "Thumbprint": "[Thumbprint]",
                     "X509StoreName": "My"
                 },
-                "ClientCertificateThumbprints": [
-                    {
-                        "CertificateThumbprint": "[Thumbprint]",
-                        "IsAdmin": false
-                    },
-                    {
-                        "CertificateThumbprint": "[Thumbprint]",
-                        "IsAdmin": true
-                    }
-                ],
-                "ClientCertificateCommonNames": [
-                    {
-                        "CertificateCommonName": "[CertificateCommonName]",
-                        "CertificateIssuerThumbprint": "[Thumbprint1,Thumbprint2,Thumbprint3,...]",
-                        "IsAdmin": true
-                    }
-                ]
+                "ServerCertificate": {
+                    "Thumbprint": "[Thumbprint]",
+                    "X509StoreName": "My"
+                },
+                "ReverseProxyCertificate": {
+                    "Thumbprint": "[Thumbprint]",
+                    "X509StoreName": "My"
+                }
             }
         },
         "nodeTypes": [

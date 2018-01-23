@@ -612,11 +612,17 @@
                     "certificateThumbprint": {
                         "value": "[parameters('certificateThumbprint')]"
                     },
+                    "certificateUrlValue": {
+                        "value": "[parameters('certificateUrlValue')]"
+                    },
                     "reverseProxyCertificateStoreValue": {
                         "value": "[parameters('reverseProxyCertificateStoreValue')]"
                     },
                     "reverseProxyCertificateThumbprint": {
                         "value": "[parameters('reverseProxyCertificateThumbprint')]"
+                    },
+                    "reverseProxyCertificateUrlValue": {
+                        "value": "[parameters('reverseProxyCertificateUrlValue')]"
                     },
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"

@@ -102,17 +102,35 @@
         "applicationEndPort": {
             "type": "int"
         },
+        "sourceVaultValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Id of the key vault, is should be in the format of /subscriptions/<Sub ID>/resourceGroups/<Resource group name>/providers/Microsoft.KeyVault/vaults/<vault name>"
+            }
+        },
         "certificateStoreValue": {
             "type": "string"
         },
         "certificateThumbprint": {
             "type": "string"
         },
+        "certificateUrlValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
+        },
         "reverseProxyCertificateStoreValue": {
             "type": "string"
         },
         "reverseProxyCertificateThumbprint": {
             "type": "string"
+        },
+        "reverseProxyCertificateUrlValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
         },
         "serviceFabricUrl": {
             "type": "string",
@@ -187,7 +205,24 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computernamePrefix": "[parameters('vmNodeTypeName')]"
+                        "computernamePrefix": "[parameters('vmNodeTypeName')]",
+                        "secrets": [
+                            {
+                                "sourceVault": {
+                                    "id": "[parameters('sourceVaultValue')]"
+                                },
+                                "vaultCertificates": [
+                                    {
+                                        "certificateStore": "[parameters('certificateStoreValue')]",
+                                        "certificateUrl": "[parameters('certificateUrlValue')]"
+                                    },
+                                    {
+                                        "certificateStore": "[parameters('reverseProxyCertificateStoreValue')]",
+                                        "certificateUrl": "[parameters('reverseProxyCertificateUrlValue')]"
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     "storageProfile": {
                         "imageReference": {
@@ -246,6 +281,10 @@
                                             "ephemeralEndPort": "[parameters('ephemeralEndPort')]",
                                             "applicationStartPort": "[parameters('applicationStartPort')]",
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
+                                            "certificateStoreValue": "[parameters('certificateStoreValue')]",
+                                            "certificateThumbprint": "[parameters('certificateThumbprint')]",
+                                            "reverseProxyCertificateStoreValue": "[parameters('reverseProxyCertificateStoreValue')]",
+                                            "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
