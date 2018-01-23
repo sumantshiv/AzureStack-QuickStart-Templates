@@ -449,10 +449,6 @@
                                     {
                                         "certificateStore": "[parameters('certificateStoreValue')]",
                                         "certificateUrl": "[parameters('certificateUrlValue')]"
-                                    },
-                                    {
-                                        "certificateStore": "[parameters('reverseProxyCertificateStoreValue')]",
-                                        "certificateUrl": "[parameters('reverseProxyCertificateUrlValue')]"
                                     }
                                 ]
                             }
@@ -605,6 +601,9 @@
                     },
                     "applicationEndPort": {
                         "value": "[variables('applicationEndPort')]"
+                    },
+                    "sourceVaultValue": {
+                        "value": "[parameters('sourceVaultValue')]"
                     },
                     "certificateStoreValue": {
                         "value": "[parameters('certificateStoreValue')]"
