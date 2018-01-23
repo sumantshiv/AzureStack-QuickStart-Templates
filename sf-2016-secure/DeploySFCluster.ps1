@@ -219,14 +219,14 @@
                 $configContent.properties.diagnosticsStore.connectionstring = $diagStoreConnectinString
 
                 # Adding Security settings to the configuration.
-                $configContent.properties.security.ClusterCertificate.Thumbprint = $Using:certificateThumbprint
-                $configContent.properties.security.ClusterCertificate.X509StoreName = $Using:certificateStoreValue
+                $configContent.properties.security.CertificateInformation.ClusterCertificate.Thumbprint = $Using:certificateThumbprint
+                $configContent.properties.security.CertificateInformation.ClusterCertificate.X509StoreName = $Using:certificateStoreValue
 
-                $configContent.properties.security.ServerCertificate.Thumbprint = $Using:certificateThumbprint
-                $configContent.properties.security.ServerCertificate.X509StoreName = $Using:certificateStoreValue
+                $configContent.properties.security.CertificateInformation.ServerCertificate.Thumbprint = $Using:certificateThumbprint
+                $configContent.properties.security.CertificateInformation.ServerCertificate.X509StoreName = $Using:certificateStoreValue
 
-                $configContent.properties.security.ReverseProxyCertificate.Thumbprint = $Using:reverseProxyCertificateThumbprint
-                $configContent.properties.security.ReverseProxyCertificate.X509StoreName = $Using:reverseProxyCertificateStoreValue
+                $configContent.properties.security.CertificateInformation.ReverseProxyCertificate.Thumbprint = $Using:reverseProxyCertificateThumbprint
+                $configContent.properties.security.CertificateInformation.ReverseProxyCertificate.X509StoreName = $Using:reverseProxyCertificateStoreValue
 				
                 # Creating configuration json.
                 $configContent = ConvertTo-Json $configContent -Depth 99
