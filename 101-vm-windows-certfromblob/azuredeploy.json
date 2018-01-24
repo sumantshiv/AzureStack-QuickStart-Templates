@@ -43,21 +43,32 @@
                 "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version. Allowed values: 2008-R2-SP1, 2012-Datacenter, 2012-R2-Datacenter."
             }
         },
+        "clusterCertificateName": {
+            "type": "string"
+        },
+        "clusterCertificatePassword": {
+            "type": "securestring",
+            "defaultValue": "!!123abc"
+        },
+        "reverseProxyCertificateName": {
+            "type": "string"
+        },
+        "reverseProxyCertificatePassword": {
+            "type": "securestring",
+            "defaultValue": "!!123abc"
+        },
+        "certBlobCloudName": {
+            "type": "string",
+            "defaultValue": "AzureCloud"
+        },
         "certBlobAccountName": {
             "type": "string"
         },
         "certBlobSASKey": {
             "type": "string"
         },
-        "certBlobName": {
-            "type": "string"
-        },
         "certBlobContainerName": {
             "type": "string"
-        },
-        "certBlobCloudName": {
-            "type": "string",
-            "defaultValue": "AzureCloud"
         }
     },
     "variables": {
@@ -75,7 +86,21 @@
         "virtualNetworkName": "[replace(replace(tolower(concat('vnet',resourceGroup().name)), '-', ''), '.','')]",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-        "networkSecurityGroupName": "[replace(replace(tolower(concat('nsg',resourceGroup().name)), '-', ''), '.','')]"
+        "networkSecurityGroupName": "[replace(replace(tolower(concat('nsg',resourceGroup().name)), '-', ''), '.','')]",
+
+        "deploymentBaseUri": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/simplevmcertfromblob/sql-2014-non-ha",
+        "scriptName": "PrepareVM.ps1",
+        "scriptFiles": [ "[concat(variables('deploymentBaseUri'), '/', variables('scriptName'))]" ],
+
+        "keyParam": "[concat(' -StorageAccessKey ', parameters('certBlobSASKey') )]",
+        "envParam": "[concat(' -EnvironmentName ', parameters('certBlobCloudName') )]",
+        "storageAcct": "[concat(' -StorageAccountName ', parameters('certBlobAccountName') )]",
+        "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
+        "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
+        "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
+        "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
+        "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
+        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'))]"
     },
     "resources": [
         {
@@ -88,19 +113,19 @@
             },
             "properties": {
                 "securityRules": [
-                {
-                    "name": "rule1",
-                    "properties": {
-                        "protocol": "*",
-                        "sourcePortRange": "*",
-                        "destinationPortRange": "*",
-                        "sourceAddressPrefix": "*",
-                        "destinationAddressPrefix": "*",
-                        "access": "Allow",
-                        "priority": 101,
-                        "direction": "Inbound"
+                    {
+                        "name": "rule1",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 101,
+                            "direction": "Inbound"
+                        }
                     }
-                }
                 ]
             }
         },
@@ -146,7 +171,7 @@
             "name": "[variables('nicName')]",
             "location": "[variables('location')]",
             "dependsOn": [
-                
+
                 "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
             ],
             "properties": {
@@ -179,20 +204,7 @@
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "secrets": [
-                        {
-                            "sourceVault": {
-                                "id": "[parameters('sourceVaultValue')]"
-                            },
-                            "vaultCertificates": [
-                                {
-                                    "certificateStore": "[parameters('certificateStoreValue')]",
-                                    "certificateUrl": "[parameters('certificateUrlValue')]"
-                                }
-                            ]
-                        }
-                    ]
+                    "adminPassword": "[parameters('adminPassword')]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -224,6 +236,23 @@
                     }
                 }
             }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmName'),'/CustomScriptExtension')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.8",
+                "autoUpgradeMinorVersion": "true",
+                "settings": {
+                    "fileUris": "[variables('scriptFiles')]",
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
+                }
+            }
         }
+
     ]
 }

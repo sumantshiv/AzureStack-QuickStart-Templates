@@ -9,15 +9,25 @@
         
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string] $AzureContainerName,
+        [string] $ContainerName,
 
         [Parameter(Mandatory=$false)]
-        [string] $AzureEnvironmentName = "AzureCloud",
+        [string] $EnvironmentName = "AzureCloud",
 
         [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $BlobName
+        [string] $ClusterCertName,
+
+        [Parameter(Mandatory=$true)]
+        [Security.SecureString] $ClusterCertPassword,
+
+        [Parameter(Mandatory=$true)]
+        [string] $ReverseProxyCertName,
+
+        [Parameter(Mandatory=$true)]
+        [Security.SecureString] $ReverseProxyCertPassword
 )
+
+$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 
 <#
 .SYNOPSIS
@@ -43,7 +53,11 @@ function Get-InfraFileFromAzure
 
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string] $BlobName
+        [string] $BlobName,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $LocalOutPath
     )
 
     $success = $false
@@ -55,8 +69,7 @@ function Get-InfraFileFromAzure
         
         try
         {
-            $localDir = $env:Temp
-            $TargetLocalRootPath = $localDir + "\" + $BlobName
+            $TargetLocalRootPath = Join-Path -Path $LocalOutPath  -ChildPath $BlobName
 
             if(Test-Path -Path $TargetLocalRootPath)
             {                
@@ -64,7 +77,7 @@ function Get-InfraFileFromAzure
             }
             
             $storageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccessKey -Environment $AzureEnvironmentName
-            Get-AzureStorageBlobContent -Blob $BlobName -Container $AzureContainerName -Destination $localDir -Context $storageContext | Out-Null
+            Get-AzureStorageBlobContent -Blob $BlobName -Container $AzureContainerName -Destination $LocalOutPath -Context $storageContext | Out-Null
         }
         catch
         {
@@ -83,7 +96,6 @@ function Get-InfraFileFromAzure
         $errMsg =  "Failed to download $blobName from Azure after retries"
         throw $errMsg
     }
-    return $TargetLocalRootPath
 }
 
 <#
@@ -101,5 +113,30 @@ function Get-ARMPSModule
         Install-Module -Name AzureRM -RequiredVersion "1.2.11"
     }
 }
+
+# Install ARM PS cmdlets.
+Get-ARMPSModule
+
+$localDir = $env:Temp
+
+$CertTable = @{"$ClusterCertName" = $ClusterCertPassword; "$ReverseProxyCertName" = $ReverseProxyCertPassword}
+
+$CertTable.Keys | % {
+                    Get-InfraFileFromAzure -StorageAccessKey $StorageAccessKey `
+                                            -BlobName $_ `
+                                            -StorageAccountName $StorageAccountName `
+                                            -AzureContainerName $ContainerName `
+                                            -AzureEnvironmentName $EnvironmentName `
+                                            -LocalOutPath  $localDir
+
+                    # Import Certs.
+
+                    $certPath = Join-Path -Path $localDir -ChildPath $_
+
+                    Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath $certPath -Password $($CertTable.$_)
+                }
+
+
+
 
 
