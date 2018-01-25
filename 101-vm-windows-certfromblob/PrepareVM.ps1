@@ -18,13 +18,13 @@
         [string] $ClusterCertName,
 
         [Parameter(Mandatory=$true)]
-        [Security.SecureString] $ClusterCertPassword,
+        [string] $ClusterCertPassword,
 
         [Parameter(Mandatory=$true)]
         [string] $ReverseProxyCertName,
 
         [Parameter(Mandatory=$true)]
-        [Security.SecureString] $ReverseProxyCertPassword
+        [string] $ReverseProxyCertPassword
 )
 
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
@@ -133,7 +133,7 @@ $CertTable.Keys | % {
 
                     $certPath = Join-Path -Path $localDir -ChildPath $_
 
-                    Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath $certPath -Password $($CertTable.$_)
+                    Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath $certPath -Password (ConvertTo-SecureString -String $($CertTable.$_) -AsPlainText -Force)
                 }
 
 

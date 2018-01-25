@@ -88,7 +88,7 @@
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
         "networkSecurityGroupName": "[replace(replace(tolower(concat('nsg',resourceGroup().name)), '-', ''), '.','')]",
 
-        "deploymentBaseUri": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/simplevmcertfromblob/sql-2014-non-ha",
+        "deploymentBaseUri": "https://raw.githubusercontent.com/sumantshiv/AzureStack-QuickStart-Templates/simplevmcertfromblob/101-vm-windows-certfromblob",
         "scriptName": "PrepareVM.ps1",
         "scriptFiles": [ "[concat(variables('deploymentBaseUri'), '/', variables('scriptName'))]" ],
 
@@ -242,13 +242,18 @@
             "name": "[concat(parameters('vmName'),'/CustomScriptExtension')]",
             "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            ],
             "properties": {
                 "publisher": "Microsoft.Compute",
                 "type": "CustomScriptExtension",
                 "typeHandlerVersion": "1.8",
                 "autoUpgradeMinorVersion": "true",
                 "settings": {
-                    "fileUris": "[variables('scriptFiles')]",
+                    "fileUris": "[variables('scriptFiles')]"
+                },
+                "protectedSettings": {
                     "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
                 }
             }
