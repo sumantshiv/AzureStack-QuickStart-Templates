@@ -610,6 +610,18 @@
                     "applicationEndPort": {
                         "value": "[variables('applicationEndPort')]"
                     },
+                    "certBlobCloudName": {
+                        "value": "[parameters('certBlobCloudName')]"
+                    },
+                    "certBlobAccountName": {
+                        "value": "[parameters('certBlobAccountName')]"
+                    },
+                    "certBlobSASKey": {
+                        "value": "[parameters('certBlobSASKey')]"
+                    },
+                    "certBlobContainerName": {
+                        "value": "[parameters('certBlobContainerName')]"
+                    },
                     "clusterCertificateName": {
                         "value": "[parameters('clusterCertificateName')]"
                     },

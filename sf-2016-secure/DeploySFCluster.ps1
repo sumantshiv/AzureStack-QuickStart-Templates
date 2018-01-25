@@ -270,7 +270,7 @@
                     try
                     {   
                         Import-Module ServiceFabric -ErrorAction SilentlyContinue -Verbose:$false
-                        $connection = Connect-ServiceFabricCluster -ConnectionEndpoint localhost:$Using:clientConnectionEndpointPort
+                        $connection = Connect-ServiceFabricCluster
                         if($connection -and $connection[0])
                         {
                             Write-Verbose "Service Fabric connection successful." 
