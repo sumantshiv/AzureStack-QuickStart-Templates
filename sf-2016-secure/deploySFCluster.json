@@ -102,34 +102,61 @@
         "applicationEndPort": {
             "type": "int"
         },
-        "sourceVaultValue": {
+        "certBlobCloudName": {
             "type": "string",
-            "metadata": {
-                "description": "Resource Id of the key vault, is should be in the format of /subscriptions/<Sub ID>/resourceGroups/<Resource group name>/providers/Microsoft.KeyVault/vaults/<vault name>"
-            }
+            "defaultValue": "AzureCloud"
+        },
+        "certBlobAccountName": {
+            "type": "string"
+        },
+        "certBlobSASKey": {
+            "type": "string"
+        },
+        "certBlobContainerName": {
+            "type": "string"
+        },
+        "clusterCertificateName": {
+            "type": "string"
+        },
+        "clusterCertificatePassword": {
+            "type": "securestring"
         },
         "certificateStoreValue": {
-            "type": "string"
-        },
-        "certificateThumbprint": {
-            "type": "string"
-        },
-        "certificateUrlValue": {
             "type": "string",
+            "allowedValues": [
+                "My"
+            ],
+            "defaultValue": "My",
             "metadata": {
-                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+                "description": "The store name where the cert will be deployed in the virtual machine"
             }
         },
-        "reverseProxyCertificateStoreValue": {
-            "type": "string"
-        },
-        "reverseProxyCertificateThumbprint": {
-            "type": "string"
-        },
-        "reverseProxyCertificateUrlValue": {
+        "certificateThumbprint": {
             "type": "string",
             "metadata": {
-                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+                "description": "Certificate Thumbprint"
+            }
+        },
+        "reverseProxyCertificateName": {
+            "type": "string"
+        },
+        "reverseProxyCertificatePassword": {
+            "type": "securestring"
+        },
+        "reverseProxyCertificateStoreValue": {
+            "type": "string",
+            "allowedValues": [
+                "My"
+            ],
+            "defaultValue": "My",
+            "metadata": {
+                "description": "The store name where the cert will be deployed in the virtual machine"
+            }
+        },
+        "reverseProxyCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Reverse proxy Certificate Thumbprint"
             }
         },
         "serviceFabricUrl": {
@@ -154,10 +181,23 @@
         "location": "[resourceGroup().location]",
         "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
         "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
-        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]",
+        "scriptName": "PrepareServiceFabricDeployment.ps1",
+        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), variables('scriptName'))]",
         "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.X509.MultiMachine.json')]",
 
-        "deploymentNodeIndex": 0
+        "deploymentNodeIndex": 0,
+
+        "keyParam": "[concat(' -StorageAccessKey ', parameters('certBlobSASKey') )]",
+        "envParam": "[concat(' -EnvironmentName ', parameters('certBlobCloudName') )]",
+        "storageAcct": "[concat(' -StorageAccountName ', parameters('certBlobAccountName') )]",
+        "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
+        "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
+        "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
+        "clusterCertThumbprintParam": "[concat(' -ClusterCertThumbprint ', parameters('certificateThumbprint') )]",
+        "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
+        "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
+        "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
+        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'))]"
     },
     "resources": [
         {
@@ -205,20 +245,7 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computernamePrefix": "[parameters('vmNodeTypeName')]",
-                        "secrets": [
-                            {
-                                "sourceVault": {
-                                    "id": "[parameters('sourceVaultValue')]"
-                                },
-                                "vaultCertificates": [
-                                    {
-                                        "certificateStore": "[parameters('certificateStoreValue')]",
-                                        "certificateUrl": "[parameters('certificateUrlValue')]"
-                                    }
-                                ]
-                            }
-                        ]
+                        "computernamePrefix": "[parameters('vmNodeTypeName')]"
                     },
                     "storageProfile": {
                         "imageReference": {
@@ -250,7 +277,7 @@
                                     "typeHandlerVersion": "1.8",
                                     "autoUpgradeMinorVersion": true,
                                     "protectedSettings": {
-                                        "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File PrepareServiceFabricDeployment.ps1"
+                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
                                     },
                                     "type": "CustomScriptExtension"
                                 }
