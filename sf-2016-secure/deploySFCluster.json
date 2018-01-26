@@ -209,7 +209,7 @@
         "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
         "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
         "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
-        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'), variables('adminClientCertThumbprintParam'), variables('nonadminClientCertThumbprintParam'))]"
+        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'))]"
     },
     "resources": [
         {
