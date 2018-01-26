@@ -169,10 +169,27 @@ Get-ARMPSModule
 
 $localDir = $env:Temp
 
-$certPwdMapping = @{"$ClusterCertName" = $ClusterCertPassword; "$ReverseProxyCertName" = $ReverseProxyCertPassword}
+$certPwdMapping = @{}
+if( -not $certPwdMapping.ContainsKey($ClusterCertName))
+{
+    $certPwdMapping.Add($ClusterCertName, $ClusterCertPassword)
+}
 
-$certThumbprintMapping = @{"$ClusterCertName" = $certificateThumbprint; "$ReverseProxyCertName" = $reverseProxyCertificateThumbprint}
+if( -not $certPwdMapping.ContainsKey($ReverseProxyCertName))
+{
+    $certPwdMapping.Add($ReverseProxyCertName, $ReverseProxyCertPassword)
+}
 
+$certThumbprintMapping = @{}
+if( -not $certThumbprintMapping.ContainsKey($ClusterCertName))
+{
+    $certThumbprintMapping.Add($ClusterCertName, $certificateThumbprint)
+}
+
+if( -not $certThumbprintMapping.ContainsKey($ReverseProxyCertName))
+{
+    $certThumbprintMapping.Add($ReverseProxyCertName, $reverseProxyCertificateThumbprint)
+}
 
 $certPwdMapping.Keys | % {
                     Get-InfraFileFromAzure -StorageAccessKey $StorageAccessKey `
