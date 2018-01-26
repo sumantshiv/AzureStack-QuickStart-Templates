@@ -49,7 +49,17 @@
                 "ReverseProxyCertificate": {
                     "Thumbprint": "[Thumbprint]",
                     "X509StoreName": "My"
-                }
+                },
+                "ClientCertificateThumbprints": [
+                    {
+                        "CertificateThumbprint": "[Thumbprint]",
+                        "IsAdmin": false
+                    },
+                    {
+                        "CertificateThumbprint": "[Thumbprint]",
+                        "IsAdmin": true
+                    }
+                ]
             }
         },
         "nodeTypes": [

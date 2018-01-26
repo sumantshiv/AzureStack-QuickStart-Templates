@@ -138,16 +138,6 @@
         "clusterCertificatePassword": {
             "type": "securestring"
         },
-        "certificateStoreValue": {
-            "type": "string",
-            "allowedValues": [
-                "My"
-            ],
-            "defaultValue": "My",
-            "metadata": {
-                "description": "The store name where the cert will be deployed in the virtual machine"
-            }
-        },
         "certificateThumbprint": {
             "type": "string",
             "metadata": {
@@ -160,23 +150,24 @@
         "reverseProxyCertificatePassword": {
             "type": "securestring"
         },
-        "reverseProxyCertificateStoreValue": {
-            "type": "string",
-            "allowedValues": [
-                "My"
-            ],
-            "defaultValue": "My",
-            "metadata": {
-                "description": "The store name where the cert will be deployed in the virtual machine"
-            }
-        },
         "reverseProxyCertificateThumbprint": {
             "type": "string",
             "metadata": {
                 "description": "Reverse proxy Certificate Thumbprint"
             }
         },
-
+        "adminClientCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Admin client Certificate Thumbprint"
+            }
+        },
+        "nonAdminClientCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Non-Admin client Certificate Thumbprint"
+            }
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -223,6 +214,7 @@
         "applicationStartPort": 20000,
         "applicationEndPort": 30000,
         "lbPortsArray": "[concat(array(parameters('servicefabricTcpGatewayPort')), array(parameters('servicefabricHttpGatewayPort')), parameters('lbApplicationPorts'))]",
+        "certificateStoreValue": "My",
 
         "imageConfig": {
             "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",
@@ -255,10 +247,10 @@
         "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
         "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
         "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
-        "clusterCertThumbprintParam": "[concat(' -ClusterCertThumbprint ', parameters('certificateThumbprint') )]",
+        "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
         "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
         "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
-        "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
+        "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]"
         "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'))]"
     },
     "resources": [
@@ -629,7 +621,7 @@
                         "value": "[parameters('clusterCertificatePassword')]"
                     },
                     "certificateStoreValue": {
-                        "value": "[parameters('certificateStoreValue')]"
+                        "value": "[variables('certificateStoreValue')]"
                     },
                     "certificateThumbprint": {
                         "value": "[parameters('certificateThumbprint')]"
@@ -641,10 +633,16 @@
                         "value": "[parameters('reverseProxyCertificatePassword')]"
                     },
                     "reverseProxyCertificateStoreValue": {
-                        "value": "[parameters('reverseProxyCertificateStoreValue')]"
+                        "value": "[variables('certificateStoreValue')]"
                     },
                     "reverseProxyCertificateThumbprint": {
                         "value": "[parameters('reverseProxyCertificateThumbprint')]"
+                    },
+                    "adminClientCertificateThumbprint": {
+                        "value": "[parameters('adminClientCertificateThumbprint')]"
+                    },
+                    "nonAdminClientCertificateThumbprint": {
+                        "value": "[parameters('nonAdminClientCertificateThumbprint')]"
                     },
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"

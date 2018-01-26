@@ -21,7 +21,7 @@
         [string] $ClusterCertPassword,
 
         [Parameter(Mandatory=$true)]
-        [string] $ClusterCertThumbprint,
+        [string] $CertificateThumbprint,
 
         [Parameter(Mandatory=$true)]
         [string] $ReverseProxyCertName,
@@ -30,7 +30,7 @@
         [string] $ReverseProxyCertPassword,
 
         [Parameter(Mandatory=$true)]
-        [string] $ReverseProxyCertThumbprint
+        [string] $ReverseProxyCertificateThumbprint
 )
 
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
@@ -171,7 +171,7 @@ $localDir = $env:Temp
 
 $certPwdMapping = @{"$ClusterCertName" = $ClusterCertPassword; "$ReverseProxyCertName" = $ReverseProxyCertPassword}
 
-$certThumbprintMapping = @{"$ClusterCertName" = $ClusterCertThumbprint; "$ReverseProxyCertName" = $ReverseProxyCertThumbprint}
+$certThumbprintMapping = @{"$ClusterCertName" = $certificateThumbprint; "$ReverseProxyCertName" = $reverseProxyCertificateThumbprint}
 
 
 $certPwdMapping.Keys | % {

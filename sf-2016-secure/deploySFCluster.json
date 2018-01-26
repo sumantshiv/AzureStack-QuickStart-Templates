@@ -159,6 +159,18 @@
                 "description": "Reverse proxy Certificate Thumbprint"
             }
         },
+        "adminClientCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Admin client Certificate Thumbprint"
+            }
+        },
+        "nonAdminClientCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Non-Admin client Certificate Thumbprint"
+            }
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -193,11 +205,11 @@
         "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
         "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
         "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
-        "clusterCertThumbprintParam": "[concat(' -ClusterCertThumbprint ', parameters('certificateThumbprint') )]",
+        "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
         "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
         "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
-        "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
-        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'))]"
+        "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]"
+        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'), variables('adminClientCertThumbprintParam'), variables('nonadminClientCertThumbprintParam'))]"
     },
     "resources": [
         {
@@ -308,6 +320,8 @@
                                             "certificateThumbprint": "[parameters('certificateThumbprint')]",
                                             "reverseProxyCertificateStoreValue": "[parameters('reverseProxyCertificateStoreValue')]",
                                             "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
+                                            "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
+                                            "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",

@@ -66,7 +66,14 @@
     [string] $reverseProxyCertificateStoreValue,
 
     [Parameter(Mandatory = $true)]
-    [string] $reverseProxyCertificateThumbprint
+    [string] $reverseProxyCertificateThumbprint,
+
+    [Parameter(Mandatory = $true)]
+    [string] $adminClientCertificateThumbprint,
+
+    [Parameter(Mandatory = $true)]
+    [string] $nonAdminClientCertificateThumbprint
+
     )
 
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
@@ -227,6 +234,24 @@
 
                 $configContent.properties.security.CertificateInformation.ReverseProxyCertificate.Thumbprint = $Using:reverseProxyCertificateThumbprint
                 $configContent.properties.security.CertificateInformation.ReverseProxyCertificate.X509StoreName = $Using:reverseProxyCertificateStoreValue
+
+                Write-Verbose "Creating Client Certificate Thumbprint data."
+                $ClientCertificateThumbprints = @()
+                
+                $adminClientCertificate = New-Object PSObject
+                $adminClientCertificate | Add-Member -MemberType NoteProperty -Name "CertificateThumbprint" -Value "$Using:adminClientCertificateThumbprint"
+                $adminClientCertificate | Add-Member -MemberType NoteProperty -Name "IsAdmin" -Value $true
+
+                $ClientCertificateThumbprints += $adminClientCertificate
+
+                $nonAdminClientCertificate = New-Object PSObject
+                $nonAdminClientCertificate | Add-Member -MemberType NoteProperty -Name "CertificateThumbprint" -Value "$Using:nonAdminClientCertificateThumbprint"
+                $nonAdminClientCertificate | Add-Member -MemberType NoteProperty -Name "IsAdmin" -Value $false
+
+                $ClientCertificateThumbprints += $nonAdminClientCertificate
+
+                $configContent.properties.security.CertificateInformation.ClientCertificateThumbprints = $ClientCertificateThumbprints
+
 				
                 # Creating configuration json.
                 $configContent = ConvertTo-Json $configContent -Depth 99
