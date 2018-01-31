@@ -157,13 +157,15 @@
             }
         },
         "adminClientCertificateThumbprint": {
-            "type": "string",
+            "type": "array",
+            "defaultValue": [],
             "metadata": {
                 "description": "Admin client Certificate Thumbprint"
             }
         },
         "nonAdminClientCertificateThumbprint": {
-            "type": "string",
+            "type": "array",
+            "defaultValue": [],
             "metadata": {
                 "description": "Non-Admin client Certificate Thumbprint"
             }
@@ -631,9 +633,6 @@
                     },
                     "reverseProxyCertificatePassword": {
                         "value": "[parameters('reverseProxyCertificatePassword')]"
-                    },
-                    "reverseProxyCertificateStoreValue": {
-                        "value": "[variables('certificateStoreValue')]"
                     },
                     "reverseProxyCertificateThumbprint": {
                         "value": "[parameters('reverseProxyCertificateThumbprint')]"

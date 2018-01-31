@@ -143,16 +143,6 @@
         "reverseProxyCertificatePassword": {
             "type": "securestring"
         },
-        "reverseProxyCertificateStoreValue": {
-            "type": "string",
-            "allowedValues": [
-                "My"
-            ],
-            "defaultValue": "My",
-            "metadata": {
-                "description": "The store name where the cert will be deployed in the virtual machine"
-            }
-        },
         "reverseProxyCertificateThumbprint": {
             "type": "string",
             "metadata": {
@@ -160,13 +150,15 @@
             }
         },
         "adminClientCertificateThumbprint": {
-            "type": "string",
+            "type": "array",
+            "defaultValue": [],
             "metadata": {
                 "description": "Admin client Certificate Thumbprint"
             }
         },
         "nonAdminClientCertificateThumbprint": {
-            "type": "string",
+            "type": "array",
+            "defaultValue": [],
             "metadata": {
                 "description": "Non-Admin client Certificate Thumbprint"
             }
@@ -318,7 +310,6 @@
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
                                             "certificateStoreValue": "[parameters('certificateStoreValue')]",
                                             "certificateThumbprint": "[parameters('certificateThumbprint')]",
-                                            "reverseProxyCertificateStoreValue": "[parameters('reverseProxyCertificateStoreValue')]",
                                             "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
                                             "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
                                             "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",

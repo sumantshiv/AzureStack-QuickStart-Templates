@@ -159,7 +159,7 @@ function Grant-CertAccess
     Set-Acl -Path $keyFullPath -AclObject $acl -ErrorAction Stop
 
     # Observe the access rights currently assigned to this certificate
-    get-acl $keyFullPath| fl    
+    get-acl $keyFullPath| fl
 }
 
 
