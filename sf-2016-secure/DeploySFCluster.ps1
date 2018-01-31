@@ -63,9 +63,6 @@
     [string] $certificateThumbprint,
 
     [Parameter(Mandatory = $true)]
-    [string] $reverseProxyCertificateStoreValue,
-
-    [Parameter(Mandatory = $true)]
     [string] $reverseProxyCertificateThumbprint,
 
     [string[]] $adminClientCertificateThumbprint = @(),
