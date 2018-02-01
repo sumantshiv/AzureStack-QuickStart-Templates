@@ -643,6 +643,9 @@
                     "nonAdminClientCertificateThumbprint": {
                         "value": "[parameters('nonAdminClientCertificateThumbprint')]"
                     },
+                    "ClientConnectionEndpoint": {
+                        "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
+                    },
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"
                     },

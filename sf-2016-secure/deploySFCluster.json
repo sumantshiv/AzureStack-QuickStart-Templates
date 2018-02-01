@@ -163,6 +163,9 @@
                 "description": "Non-Admin client Certificate Thumbprint"
             }
         },
+        "ClientConnectionEndpoint": {
+            "type": "string"
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -313,6 +316,7 @@
                                             "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
                                             "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
                                             "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",
+                                            "ClientConnectionEndpoint": "[parameters('ClientConnectionEndpoint')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",

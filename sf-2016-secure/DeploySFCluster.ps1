@@ -67,8 +67,10 @@
 
     [string[]] $adminClientCertificateThumbprint = @(),
 
-    [string[]] $nonAdminClientCertificateThumbprint = @()
+    [string[]] $nonAdminClientCertificateThumbprint = @(),
 
+    [Parameter(Mandatory = $true)]
+    [string] $ClientConnectionEndpoint
     )
 
     Import-DscResource -ModuleName PSDesiredStateConfiguration, xServiceFabricSecureCluster
@@ -99,6 +101,7 @@
             ReverseProxyCertificateThumbprint = $reverseProxyCertificateThumbprint
             AdminClientCertificateThumbprint = $adminClientCertificateThumbprint
             NonAdminClientCertificateThumbprint = $nonAdminClientCertificateThumbprint
+            ClientConnectionEndpoint = $ClientConnectionEndpoint
             PsDscRunAsCredential = $Credential
         }
     }
