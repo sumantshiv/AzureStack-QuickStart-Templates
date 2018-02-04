@@ -119,6 +119,57 @@
                 "description": "Array of application ports to be opened (like [80, 8080, 8081])."
             }
         },
+        "certBlobCloudName": {
+            "type": "string",
+            "defaultValue": "AzureCloud"
+        },
+        "certBlobAccountName": {
+            "type": "string"
+        },
+        "certBlobSASKey": {
+            "type": "string"
+        },
+        "certBlobContainerName": {
+            "type": "string"
+        },
+        "clusterCertificateName": {
+            "type": "string"
+        },
+        "clusterCertificatePassword": {
+            "type": "securestring"
+        },
+        "certificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Certificate Thumbprint"
+            }
+        },
+        "reverseProxyCertificateName": {
+            "type": "string"
+        },
+        "reverseProxyCertificatePassword": {
+            "type": "securestring"
+        },
+        "reverseProxyCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Reverse proxy Certificate Thumbprint"
+            }
+        },
+        "adminClientCertificateThumbprint": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Admin client Certificate Thumbprint"
+            }
+        },
+        "nonAdminClientCertificateThumbprint": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Non-Admin client Certificate Thumbprint"
+            }
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -158,13 +209,14 @@
         "subnetName": "[concat(variables('uniquePrefix'), 'subnet')]",
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
-        "dnsLable": "[tolower(parameters('clusterName'))]",
+        "dnsLabel": "[tolower(parameters('clusterName'))]",
         "diagStoreAccountName": "[toLower(concat('diagSA', uniqueString(resourceGroup().id)))]",
         "ephemeralStartPort": 49152,
         "ephemeralEndPort": 65534,
         "applicationStartPort": 20000,
         "applicationEndPort": 30000,
         "lbPortsArray": "[concat(array(parameters('servicefabricTcpGatewayPort')), array(parameters('servicefabricHttpGatewayPort')), parameters('lbApplicationPorts'))]",
+        "certificateStoreValue": "My",
 
         "imageConfig": {
             "vmssUniqueName": "[concat(variables('uniquePrefix'), 'vmss')]",
@@ -188,7 +240,20 @@
         },
 
         "sfDeploymentTemplateURL": "[uri(parameters('scriptBaseUrl'), 'deploySFCluster.json')]",
-        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]"
+        "scriptName": "PrepareServiceFabricDeployment.ps1",
+        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), variables('scriptName'))]",
+
+        "keyParam": "[concat(' -StorageAccessKey ', parameters('certBlobSASKey') )]",
+        "envParam": "[concat(' -EnvironmentName ', parameters('certBlobCloudName') )]",
+        "storageAcct": "[concat(' -StorageAccountName ', parameters('certBlobAccountName') )]",
+        "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
+        "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
+        "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
+        "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
+        "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
+        "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
+        "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
+        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'))]"
     },
     "resources": [
         {
@@ -248,7 +313,7 @@
             ],
             "properties": {
                 "dnsSettings": {
-                    "domainNameLabel": "[variables('dnsLable')]"
+                    "domainNameLabel": "[variables('dnsLabel')]"
                 },
                 "publicIPAllocationMethod": "Dynamic"
             },
@@ -421,7 +486,7 @@
                                     "typeHandlerVersion": "1.8",
                                     "autoUpgradeMinorVersion": true,
                                     "protectedSettings": {
-                                        "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File PrepareServiceFabricDeployment.ps1"
+                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
                                     },
                                     "type": "CustomScriptExtension"
                                 }
@@ -538,6 +603,48 @@
                     },
                     "applicationEndPort": {
                         "value": "[variables('applicationEndPort')]"
+                    },
+                    "certBlobCloudName": {
+                        "value": "[parameters('certBlobCloudName')]"
+                    },
+                    "certBlobAccountName": {
+                        "value": "[parameters('certBlobAccountName')]"
+                    },
+                    "certBlobSASKey": {
+                        "value": "[parameters('certBlobSASKey')]"
+                    },
+                    "certBlobContainerName": {
+                        "value": "[parameters('certBlobContainerName')]"
+                    },
+                    "clusterCertificateName": {
+                        "value": "[parameters('clusterCertificateName')]"
+                    },
+                    "clusterCertificatePassword": {
+                        "value": "[parameters('clusterCertificatePassword')]"
+                    },
+                    "certificateStoreValue": {
+                        "value": "[variables('certificateStoreValue')]"
+                    },
+                    "certificateThumbprint": {
+                        "value": "[parameters('certificateThumbprint')]"
+                    },
+                    "reverseProxyCertificateName": {
+                        "value": "[parameters('reverseProxyCertificateName')]"
+                    },
+                    "reverseProxyCertificatePassword": {
+                        "value": "[parameters('reverseProxyCertificatePassword')]"
+                    },
+                    "reverseProxyCertificateThumbprint": {
+                        "value": "[parameters('reverseProxyCertificateThumbprint')]"
+                    },
+                    "adminClientCertificateThumbprint": {
+                        "value": "[parameters('adminClientCertificateThumbprint')]"
+                    },
+                    "nonAdminClientCertificateThumbprint": {
+                        "value": "[parameters('nonAdminClientCertificateThumbprint')]"
+                    },
+                    "ClientConnectionEndpoint": {
+                        "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
                     },
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"

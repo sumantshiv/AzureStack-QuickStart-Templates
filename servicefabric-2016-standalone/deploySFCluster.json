@@ -102,6 +102,70 @@
         "applicationEndPort": {
             "type": "int"
         },
+        "certBlobCloudName": {
+            "type": "string",
+            "defaultValue": "AzureCloud"
+        },
+        "certBlobAccountName": {
+            "type": "string"
+        },
+        "certBlobSASKey": {
+            "type": "string"
+        },
+        "certBlobContainerName": {
+            "type": "string"
+        },
+        "clusterCertificateName": {
+            "type": "string"
+        },
+        "clusterCertificatePassword": {
+            "type": "securestring"
+        },
+        "certificateStoreValue": {
+            "type": "string",
+            "allowedValues": [
+                "My"
+            ],
+            "defaultValue": "My",
+            "metadata": {
+                "description": "The store name where the cert will be deployed in the virtual machine"
+            }
+        },
+        "certificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Certificate Thumbprint"
+            }
+        },
+        "reverseProxyCertificateName": {
+            "type": "string"
+        },
+        "reverseProxyCertificatePassword": {
+            "type": "securestring"
+        },
+        "reverseProxyCertificateThumbprint": {
+            "type": "string",
+            "metadata": {
+                "description": "Reverse proxy Certificate Thumbprint"
+            }
+        },
+        "adminClientCertificateThumbprint": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Admin client Certificate Thumbprint"
+            }
+        },
+        "nonAdminClientCertificateThumbprint": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Non-Admin client Certificate Thumbprint"
+            }
+        },
+        "ClientConnectionEndpoint": {
+            "type": "string"
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -124,10 +188,23 @@
         "location": "[resourceGroup().location]",
         "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
         "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
-        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), 'PrepareServiceFabricDeployment.ps1')]",
-        "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.Unsecure.MultiMachine.json')]",
+        "scriptName": "PrepareServiceFabricDeployment.ps1",
+        "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), variables('scriptName'))]",
+        "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.X509.MultiMachine.json')]",
 
-        "deploymentNodeIndex": 0
+        "deploymentNodeIndex": 0,
+
+        "keyParam": "[concat(' -StorageAccessKey ', parameters('certBlobSASKey') )]",
+        "envParam": "[concat(' -EnvironmentName ', parameters('certBlobCloudName') )]",
+        "storageAcct": "[concat(' -StorageAccountName ', parameters('certBlobAccountName') )]",
+        "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
+        "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
+        "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
+        "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
+        "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
+        "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
+        "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
+        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'))]"
     },
     "resources": [
         {
@@ -207,7 +284,7 @@
                                     "typeHandlerVersion": "1.8",
                                     "autoUpgradeMinorVersion": true,
                                     "protectedSettings": {
-                                        "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File PrepareServiceFabricDeployment.ps1"
+                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
                                     },
                                     "type": "CustomScriptExtension"
                                 }
@@ -234,6 +311,12 @@
                                             "ephemeralEndPort": "[parameters('ephemeralEndPort')]",
                                             "applicationStartPort": "[parameters('applicationStartPort')]",
                                             "applicationEndPort": "[parameters('applicationEndPort')]",
+                                            "certificateStoreValue": "[parameters('certificateStoreValue')]",
+                                            "certificateThumbprint": "[parameters('certificateThumbprint')]",
+                                            "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
+                                            "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
+                                            "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",
+                                            "ClientConnectionEndpoint": "[parameters('ClientConnectionEndpoint')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
