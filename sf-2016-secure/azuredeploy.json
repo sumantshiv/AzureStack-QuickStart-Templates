@@ -209,7 +209,7 @@
         "subnetName": "[concat(variables('uniquePrefix'), 'subnet')]",
         "natPoolName": "[concat(variables('uniquePrefix'), 'natpool')]",
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
-        "dnsLable": "[tolower(parameters('clusterName'))]",
+        "dnsLabel": "[tolower(parameters('clusterName'))]",
         "diagStoreAccountName": "[toLower(concat('diagSA', uniqueString(resourceGroup().id)))]",
         "ephemeralStartPort": 49152,
         "ephemeralEndPort": 65534,
@@ -313,7 +313,7 @@
             ],
             "properties": {
                 "dnsSettings": {
-                    "domainNameLabel": "[variables('dnsLable')]"
+                    "domainNameLabel": "[variables('dnsLabel')]"
                 },
                 "publicIPAllocationMethod": "Dynamic"
             },
