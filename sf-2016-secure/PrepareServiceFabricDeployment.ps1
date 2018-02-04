@@ -125,6 +125,9 @@ function Get-ARMPSModule
     }
 }
 
+# As per Service fabric documentation at: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-windows-cluster-x509-security#install-the-certificates
+# set the access control on this certificate so that the Service Fabric process, which runs under the Network Service account, 
+# can use it by running the following script. Provide the thumbprint of the certificate and NETWORK SERVICE for the service account.
 function Grant-CertAccess
 {
     param
@@ -161,8 +164,6 @@ function Grant-CertAccess
     # Observe the access rights currently assigned to this certificate
     get-acl $keyFullPath| fl
 }
-
-
 
 # Install ARM PS cmdlets.
 Get-ARMPSModule
