@@ -166,6 +166,12 @@
         "ClientConnectionEndpoint": {
             "type": "string"
         },
+        "DNSService": {
+            "type": "string"
+        },
+        "RepairManager": {
+            "type": "string"
+        },
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
@@ -317,6 +323,8 @@
                                             "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
                                             "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",
                                             "ClientConnectionEndpoint": "[parameters('ClientConnectionEndpoint')]",
+                                            "DNSService": "[parameters('DNSService')]",
+                                            "RepairManager": "[parameters('RepairManager')]",
                                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",

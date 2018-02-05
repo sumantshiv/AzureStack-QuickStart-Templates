@@ -65,8 +65,16 @@
     [Parameter(Mandatory = $true)]
     [string] $reverseProxyCertificateThumbprint,
 
+    [Parameter(Mandatory = $false)]
+    [string] $DNSService = "No",
+
+    [Parameter(Mandatory = $false)]
+    [string] $RepairManager = "No",
+
+    [Parameter(Mandatory = $false)]
     [string[]] $adminClientCertificateThumbprint = @(),
 
+    [Parameter(Mandatory = $false)]
     [string[]] $nonAdminClientCertificateThumbprint = @(),
 
     [Parameter(Mandatory = $true)]
@@ -103,6 +111,8 @@
             NonAdminClientCertificateThumbprint = $nonAdminClientCertificateThumbprint
             ClientConnectionEndpoint = $ClientConnectionEndpoint
             PsDscRunAsCredential = $Credential
+            DNSService = $DNSService
+            RepairManager = $RepairManager
         }
     }
 }
