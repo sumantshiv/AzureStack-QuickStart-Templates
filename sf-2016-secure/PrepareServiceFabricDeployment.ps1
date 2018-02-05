@@ -24,16 +24,17 @@
         [string] $CertificateThumbprint,
 
         [Parameter(Mandatory=$false)]
-        [string] $ReverseProxyCertName,
+        [string] $ReverseProxyCertName="",
 
         [Parameter(Mandatory=$false)]
-        [string] $ReverseProxyCertPassword,
+        [string] $ReverseProxyCertPassword="",
 
         [Parameter(Mandatory=$false)]
-        [string] $ReverseProxyCertificateThumbprint
+        [string] $ReverseProxyCertificateThumbprint=""
 )
 
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+$VerbosePreference = "Continue"
 
 # Enable File and Printer Sharing for Network Discovery (Port 445)
 Write-Verbose "Opening TCP firewall port 445 for networking."
@@ -176,7 +177,7 @@ if( -not $certPwdMapping.ContainsKey($ClusterCertName))
     $certPwdMapping.Add($ClusterCertName, $ClusterCertPassword)
 }
 
-if([string]::IsNullOrEmpty($ReverseProxyCertName))
+if(-not [string]::IsNullOrEmpty($ReverseProxyCertName))
 {
     if( -not $certPwdMapping.ContainsKey($ReverseProxyCertName))
     {
@@ -190,7 +191,7 @@ if( -not $certThumbprintMapping.ContainsKey($ClusterCertName))
     $certThumbprintMapping.Add($ClusterCertName, $certificateThumbprint)
 }
 
-if([string]::IsNullOrEmpty($ReverseProxyCertName) -or [string]::IsNullOrEmpty($ReverseProxyCertificateThumbprint))
+if(-not ([string]::IsNullOrEmpty($ReverseProxyCertName)) -and -not([string]::IsNullOrEmpty($ReverseProxyCertificateThumbprint)))
 {
     if( -not $certThumbprintMapping.ContainsKey($ReverseProxyCertName))
     {
