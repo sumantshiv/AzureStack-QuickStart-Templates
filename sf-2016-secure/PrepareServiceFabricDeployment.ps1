@@ -23,13 +23,13 @@
         [Parameter(Mandatory=$true)]
         [string] $CertificateThumbprint,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$false)]
         [string] $ReverseProxyCertName,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$false)]
         [string] $ReverseProxyCertPassword,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$false)]
         [string] $ReverseProxyCertificateThumbprint
 )
 
@@ -176,9 +176,12 @@ if( -not $certPwdMapping.ContainsKey($ClusterCertName))
     $certPwdMapping.Add($ClusterCertName, $ClusterCertPassword)
 }
 
-if( -not $certPwdMapping.ContainsKey($ReverseProxyCertName))
+if([string]::IsNullOrEmpty($ReverseProxyCertName))
 {
-    $certPwdMapping.Add($ReverseProxyCertName, $ReverseProxyCertPassword)
+    if( -not $certPwdMapping.ContainsKey($ReverseProxyCertName))
+    {
+        $certPwdMapping.Add($ReverseProxyCertName, $ReverseProxyCertPassword)
+    }
 }
 
 $certThumbprintMapping = @{}
@@ -187,9 +190,12 @@ if( -not $certThumbprintMapping.ContainsKey($ClusterCertName))
     $certThumbprintMapping.Add($ClusterCertName, $certificateThumbprint)
 }
 
-if( -not $certThumbprintMapping.ContainsKey($ReverseProxyCertName))
+if([string]::IsNullOrEmpty($ReverseProxyCertName) -or [string]::IsNullOrEmpty($ReverseProxyCertificateThumbprint))
 {
-    $certThumbprintMapping.Add($ReverseProxyCertName, $reverseProxyCertificateThumbprint)
+    if( -not $certThumbprintMapping.ContainsKey($ReverseProxyCertName))
+    {
+        $certThumbprintMapping.Add($ReverseProxyCertName, $reverseProxyCertificateThumbprint)
+    }
 }
 
 $certPwdMapping.Keys | % {
@@ -201,10 +207,10 @@ $certPwdMapping.Keys | % {
                                             -LocalOutPath  $localDir
 
                     # Import Certs.
-
                     $certPath = Join-Path -Path $localDir -ChildPath $_
-
                     Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath $certPath -Password (ConvertTo-SecureString -String $($certPwdMapping.$_) -AsPlainText -Force)
 
+                    # Grant Network Service access to certificates as per the documentation at: 
+                    # https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-windows-cluster-x509-security#install-the-certificates
                     Grant-CertAccess -pfxThumbPrint $($certThumbprintMapping.$_) -serviceAccount "Network Service"
                 }
