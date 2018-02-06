@@ -62,8 +62,8 @@
     [Parameter(Mandatory = $true)]
     [string] $certificateThumbprint,
 
-    [Parameter(Mandatory = $true)]
-    [string] $reverseProxyCertificateThumbprint,
+    [Parameter(Mandatory = $false)]
+    [string] $reverseProxyCertificateThumbprint = "",
 
     [Parameter(Mandatory = $false)]
     [string] $DNSService = "No",
