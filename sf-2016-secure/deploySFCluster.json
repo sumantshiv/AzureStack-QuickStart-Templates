@@ -210,7 +210,10 @@
         "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
         "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
         "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
-        "commandParam": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'), variables('reverseProxyCertNameParam'), variables('reverseProxyCertPasswordParam'), variables('reverseProxyCertThumbprintParam'))]"
+        "commandParam0": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'))]",
+        "commandParam1": "[if(equals(parameters('reverseProxyCertificateName'), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertNameParam')))]",
+        "commandParam2": "[if(equals(parameters('reverseProxyCertificatePassword'), ''), variables('commandParam1'), concat(variables('commandParam1'), variables('reverseProxyCertPasswordParam')))]",
+        "commandParam": "[if(equals(parameters('reverseProxyCertificateThumbprint'), ''), variables('commandParam2'), concat(variables('commandParam2'), variables('reverseProxyCertThumbprintParam')))]"
     },
     "resources": [
         {
