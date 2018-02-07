@@ -11,11 +11,11 @@
         "instanceCount": {
             "type": "int",
             "metadata": {
-                "description": "Size of the VM scale set (Min 3 and Max 25)."
+                "description": "Size of the VM scale set (Min 5 and Max 100)."
             },
-            "defaultValue": 3,
-            "minValue": 3,
-            "maxValue": 25
+            "defaultValue": 5,
+            "minValue": 5,
+            "maxValue": 100
         },
         "vmNodeTypeName": {
             "type": "string",
@@ -694,7 +694,11 @@
     ],
     "outputs": {
         "clusterMgmtEndpoint": {
-            "value": "[concat('http://',reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricHttpGatewayPort'), '/explorer')]",
+            "value": "[concat('https://',reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricHttpGatewayPort'), '/explorer')]",
+            "type": "string"
+        },
+        "clientConnectionEndpoint": {
+            "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]",
             "type": "string"
         }
     }
