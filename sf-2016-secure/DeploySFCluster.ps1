@@ -114,5 +114,10 @@
             DNSService = $DNSService
             RepairManager = $RepairManager
         }
+
+        LocalConfigurationManager 
+        {
+            ConfigurationMode = 'ApplyOnly'
+        }
     }
 }
