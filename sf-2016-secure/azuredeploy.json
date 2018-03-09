@@ -151,16 +151,16 @@
                 "description": "Reverse proxy Certificate Thumbprint"
             }
         },
-        "adminClientCertificateThumbprint": {
-            "type": "array",
-            "defaultValue": [ ],
+        "adminClientCertificateThumbprints": {
+            "type": "string",
+            "defaultValue": "",
             "metadata": {
-                "description": "Admin client Certificate Thumbprint"
+                "description": "Admin client Certificate Thumbprints"
             }
         },
-        "nonAdminClientCertificateThumbprint": {
-            "type": "array",
-            "defaultValue": [ ],
+        "nonAdminClientCertificateThumbprints": {
+            "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "Non-Admin client Certificate Thumbprint"
             }
@@ -267,7 +267,11 @@
 
         "isReverseProxyCert": "[if(equals(trim(parameters('reverseProxyCertificateUrlValue')), ''), bool('false'), bool('true'))]",
         "isSameCert": "[if(equals(parameters('clusterCertificateUrlValue'), parameters('reverseProxyCertificateUrlValue')), bool('true'), bool('false'))]",
-        "certsToInstall": "[if(or(not(variables('isReverseProxyCert')), variables('isSameCert')), array(parameters('clusterCertificateUrlValue')), concat(array(parameters('clusterCertificateUrlValue')), array(parameters('reverseProxyCertificateUrlValue'))))]"
+        "certsToInstall": "[if(or(not(variables('isReverseProxyCert')), variables('isSameCert')), array(parameters('clusterCertificateUrlValue')), concat(array(parameters('clusterCertificateUrlValue')), array(parameters('reverseProxyCertificateUrlValue'))))]",
+
+        "delimiters": [ ",", ";" ],
+        "adminClientCertificateThumbprint": "[split(trim(parameters('adminClientCertificateThumbprints')), variables('delimiters'))]",
+        "nonAdminClientCertificateThumbprint": "[split(trim(parameters('nonAdminClientCertificateThumbprints')), variables('delimiters'))]"
     },
     "resources": [
         {
@@ -654,10 +658,10 @@
                         "value": "[parameters('reverseProxyCertificateUrlValue')]"
                     },
                     "adminClientCertificateThumbprint": {
-                        "value": "[parameters('adminClientCertificateThumbprint')]"
+                        "value": "[variables('adminClientCertificateThumbprint')]"
                     },
                     "nonAdminClientCertificateThumbprint": {
-                        "value": "[parameters('nonAdminClientCertificateThumbprint')]"
+                        "value": "[variables('nonAdminClientCertificateThumbprint')]"
                     },
                     "ClientConnectionEndpoint": {
                         "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
