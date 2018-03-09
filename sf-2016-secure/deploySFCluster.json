@@ -102,19 +102,6 @@
         "applicationEndPort": {
             "type": "int"
         },
-        "certBlobCloudName": {
-            "type": "string",
-            "defaultValue": "AzureCloud"
-        },
-        "certBlobAccountName": {
-            "type": "string"
-        },
-        "certBlobSASKey": {
-            "type": "string"
-        },
-        "certBlobContainerName": {
-            "type": "string"
-        },
         "sourceVaultValue": {
             "type": "string",
             "metadata": {
@@ -126,12 +113,6 @@
             "metadata": {
                 "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
             }
-        },
-        "clusterCertificateName": {
-            "type": "string"
-        },
-        "clusterCertificatePassword": {
-            "type": "securestring"
         },
         "certificateStoreValue": {
             "type": "string",
@@ -149,11 +130,11 @@
                 "description": "Certificate Thumbprint"
             }
         },
-        "reverseProxyCertificateName": {
-            "type": "string"
-        },
-        "reverseProxyCertificatePassword": {
-            "type": "securestring"
+        "reverseProxyCertificateUrlValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
         },
         "reverseProxyCertificateThumbprint": {
             "type": "string",
@@ -212,20 +193,14 @@
 
         "deploymentNodeIndex": 0,
 
-        "keyParam": "[concat(' -StorageAccessKey ', parameters('certBlobSASKey') )]",
-        "envParam": "[concat(' -EnvironmentName ', parameters('certBlobCloudName') )]",
-        "storageAcct": "[concat(' -StorageAccountName ', parameters('certBlobAccountName') )]",
-        "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
-        "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
-        "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
         "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
-        "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
-        "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
         "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
-        "commandParam0": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'))]",
-        "commandParam1": "[if(equals(parameters('reverseProxyCertificateName'), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertNameParam')))]",
-        "commandParam2": "[if(equals(parameters('reverseProxyCertificatePassword'), ''), variables('commandParam1'), concat(variables('commandParam1'), variables('reverseProxyCertPasswordParam')))]",
-        "commandParam": "[if(equals(parameters('reverseProxyCertificateThumbprint'), ''), variables('commandParam2'), concat(variables('commandParam2'), variables('reverseProxyCertThumbprintParam')))]"
+        "commandParam0": "[variables('clusterCertThumbprintParam')]",
+        "commandParam": "[if(equals(trim(parameters('reverseProxyCertificateThumbprint')), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertThumbprintParam')))]",
+
+        "isReverseProxyCert": "[if(equals(trim(parameters('reverseProxyCertificateUrlValue')), ''), bool('false'), bool('true'))]",
+        "isSameCert": "[if(equals(parameters('clusterCertificateUrlValue'), parameters('reverseProxyCertificateUrlValue')), bool('true'), bool('false'))]",
+        "certsToInstall": "[if(or(not(variables('isReverseProxyCert')), variables('isSameCert')), array(parameters('clusterCertificateUrlValue')), concat(array(parameters('clusterCertificateUrlValue')), array(parameters('reverseProxyCertificateUrlValue'))))]"
     },
     "resources": [
         {
@@ -279,10 +254,14 @@
                                 "sourceVault": {
                                     "id": "[parameters('sourceVaultValue')]"
                                 },
-                                "vaultCertificates": [
+                                "copy": [
                                     {
-                                        "certificateStore": "[parameters('certificateStoreValue')]",
-                                        "certificateUrl": "[parameters('clusterCertificateUrlValue')]"
+                                        "name": "vaultCertificates",
+                                        "count": "[length(variables('certsToInstall'))]",
+                                        "input": {
+                                            "certificateStore": "[parameters('certificateStoreValue')]",
+                                            "certificateUrl": "[variables('certsToInstall')[copyIndex('vaultCertificates')]]"
+                                        }
                                     }
                                 ]
                             }
