@@ -114,7 +114,7 @@
         },
         "lbApplicationPorts": {
             "type": "array",
-            "defaultValue": [],
+            "defaultValue": [ ],
             "metadata": {
                 "description": "Array of application ports to be opened (like [80, 8080, 8081])."
             }
@@ -131,6 +131,18 @@
         },
         "certBlobContainerName": {
             "type": "string"
+        },
+        "sourceVaultValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource Id of the key vault, is should be in the format of /subscriptions/<Sub ID>/resourceGroups/<Resource group name>/providers/Microsoft.KeyVault/vaults/<vault name>"
+            }
+        },
+        "clusterCertificateUrlValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
         },
         "clusterCertificateName": {
             "type": "string"
@@ -161,14 +173,14 @@
         },
         "adminClientCertificateThumbprint": {
             "type": "array",
-            "defaultValue": [],
+            "defaultValue": [ ],
             "metadata": {
                 "description": "Admin client Certificate Thumbprint"
             }
         },
         "nonAdminClientCertificateThumbprint": {
             "type": "array",
-            "defaultValue": [],
+            "defaultValue": [ ],
             "metadata": {
                 "description": "Non-Admin client Certificate Thumbprint"
             }
@@ -484,7 +496,20 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computernamePrefix": "[parameters('vmNodeTypeName')]"
+                        "computerNamePrefix": "[parameters('vmNodeTypeName')]",
+                        "secrets": [
+                            {
+                                "sourceVault": {
+                                    "id": "[parameters('sourceVaultValue')]"
+                                },
+                                "vaultCertificates": [
+                                    {
+                                        "certificateStore": "[variables('certificateStoreValue')]",
+                                        "certificateUrl": "[parameters('clusterCertificateUrlValue')]"
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     "storageProfile": {
                         "imageReference": {
@@ -645,6 +670,12 @@
                     },
                     "certBlobContainerName": {
                         "value": "[parameters('certBlobContainerName')]"
+                    },
+                    "sourceVaultValue": {
+                        "value": "[parameters('sourceVaultValue')]"
+                    },
+                    "clusterCertificateUrlValue": {
+                        "value": "[parameters('clusterCertificateUrlValue')]"
                     },
                     "clusterCertificateName": {
                         "value": "[parameters('clusterCertificateName')]"

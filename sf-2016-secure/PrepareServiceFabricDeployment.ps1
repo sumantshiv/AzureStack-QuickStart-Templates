@@ -167,7 +167,7 @@ function Grant-CertAccess
 }
 
 # Install ARM PS cmdlets.
-Get-ARMPSModule
+#Get-ARMPSModule
 
 $localDir = $env:Temp
 
@@ -200,6 +200,8 @@ if(-not ([string]::IsNullOrEmpty($ReverseProxyCertName)) -and -not([string]::IsN
 }
 
 $certPwdMapping.Keys | % {
+
+                    <#
                     Get-InfraFileFromAzure -StorageAccessKey $StorageAccessKey `
                                             -BlobName $_ `
                                             -StorageAccountName $StorageAccountName `
@@ -210,6 +212,7 @@ $certPwdMapping.Keys | % {
                     # Import Certs.
                     $certPath = Join-Path -Path $localDir -ChildPath $_
                     Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath $certPath -Password (ConvertTo-SecureString -String $($certPwdMapping.$_) -AsPlainText -Force)
+                    #>
 
                     # Grant Network Service access to certificates as per the documentation at: 
                     # https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-windows-cluster-x509-security#install-the-certificates
