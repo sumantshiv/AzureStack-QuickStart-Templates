@@ -123,7 +123,7 @@
             "type": "array",
             "defaultValue": [ ],
             "metadata": {
-                "description": "Array of ports to be opened in the NSG (like [3389, 80, 8081])."
+                "description": "Array of additional ports to be opened in the NSG (like [3389, 80, 8081])."
             }
         },
         "sourceVaultValue": {
@@ -242,6 +242,7 @@
         "applicationStartPort": 20000,
         "applicationEndPort": 30000,
         "lbPortsArray": "[concat(array(parameters('servicefabricTcpGatewayPort')), array(parameters('servicefabricHttpGatewayPort')), parameters('lbApplicationPorts'))]",
+        "nsgPortsArray": "[concat(variables('lbPortsArray'), parameters('nsgPorts'))]",
         "certificateStoreValue": "My",
 
         "imageConfig": {
@@ -317,14 +318,14 @@
                 "copy": [
                     {
                         "name": "securityRules",
-                        "count": "[length(parameters('nsgPorts'))]",
+                        "count": "[length(variables('nsgPortsArray'))]",
                         "input": {
-                            "name": "[concat('NSGRuleForPort_', parameters('nsgPorts')[copyIndex('securityRules')])]",
+                            "name": "[concat('NSGRuleForPort_', variables('nsgPortsArray')[copyIndex('securityRules')])]",
                             "properties": {
-                                "description": "[concat('Allow ', string(parameters('nsgPorts')[copyIndex('securityRules')]))]",
+                                "description": "[concat('Allow ', string(variables('nsgPortsArray')[copyIndex('securityRules')]))]",
                                 "protocol": "Tcp",
                                 "sourcePortRange": "*",
-                                "destinationPortRange": "[parameters('nsgPorts')[copyIndex('securityRules')]]",
+                                "destinationPortRange": "[variables('nsgPortsArray')[copyIndex('securityRules')]]",
                                 "sourceAddressPrefix": "Internet",
                                 "destinationAddressPrefix": "*",
                                 "access": "Allow",
