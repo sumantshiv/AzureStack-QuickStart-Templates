@@ -119,6 +119,13 @@
                 "description": "Array of application ports to be opened (like [80, 8080, 8081])."
             }
         },
+        "nsgPorts": {
+            "type": "array",
+            "defaultValue": [ ],
+            "metadata": {
+                "description": "Array of ports to be opened in the NSG (like [3389, 80, 8081])."
+            }
+        },
         "sourceVaultValue": {
             "type": "string",
             "metadata": {
@@ -215,6 +222,8 @@
 
         "location": "[resourceGroup().location]",
         "uniquePrefix": "[uniqueString(resourceGroup().id)]",
+        "frontEndNSGName": "[concat(variables('uniquePrefix'), 'nsg')]",
+        "frontEndNSGID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('frontEndNSGName'))]",
         "virtualNetworkName": "[concat(variables('uniquePrefix'), 'vnet')]",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
         "nicName": "[concat(variables('uniquePrefix'), 'nic')]",
@@ -296,10 +305,45 @@
         },
         {
             "apiVersion": "[variables('apiVersion').vNetApiVersion]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('frontEndNSGName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "resourceType": "Service Fabric",
+                "clusterName": "[parameters('clusterName')]",
+                "displayName": "NSG - Front End"
+            },
+            "properties": {
+                "copy": [
+                    {
+                        "name": "securityRules",
+                        "count": "[length(parameters('nsgPorts'))]",
+                        "input": {
+                            "name": "[concat('NSGRuleForPort_', parameters('nsgPorts')[copyIndex('securityRules')])]",
+                            "properties": {
+                                "description": "[concat('Allow ', string(parameters('nsgPorts')[copyIndex('securityRules')]))]",
+                                "protocol": "Tcp",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "[parameters('nsgPorts')[copyIndex('securityRules')]]",
+                                "sourceAddressPrefix": "Internet",
+                                "destinationAddressPrefix": "*",
+                                "access": "Allow",
+                                "priority": "[int(concat('10', copyIndex('securityRules')))]",
+                                "direction": "Inbound"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').vNetApiVersion]",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[variables('virtualNetworkName')]",
             "location": "[variables('location')]",
-            "dependsOn": [],
+            "dependsOn": [
+                "[variables('frontEndNSGID')]"
+            ],
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -310,7 +354,11 @@
                     {
                         "name": "[variables('subnetName')]",
                         "properties": {
-                            "addressPrefix": "[parameters('subnetPrefix')]"
+                            "addressPrefix": "[parameters('subnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[variables('frontEndNSGID')]"
+                            }
+
                         }
                     }
                 ]
