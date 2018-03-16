@@ -242,7 +242,8 @@
             "vmImageVersion": "[parameters('vmImageVersion')]",
             "vhdContainerName": "[concat(variables('uniquePrefix'), 'vhd')]",
             "osDiskName": "[concat(variables('uniquePrefix'), 'osdisk')]",
-            "overProvision": "false"
+            "overProvision": "false",
+            "storageAccountType": "Standard_LRS"
         },
 
         "derivedIds": {
@@ -353,6 +354,10 @@
             "apiVersion": "[variables('apiVersion').templateDeploymentApiVersion]",
             "name": "[concat('VMSSProvisioning', copyindex())]",
             "type": "Microsoft.Resources/deployments",
+            "copy": {
+                "name": "VMSSProvisioning",
+                "count": "[length(variables('nodeTypeInstanceCounts'))]"
+            },
             "dependsOn": [
                 "[variables('vnetID')]"
             ],
