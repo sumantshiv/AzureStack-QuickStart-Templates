@@ -54,6 +54,14 @@
                 "description": "Remote desktop user password. Must be a strong password"
             }
         },
+        "runDSC": {
+            "type": "string",
+            "allowedValues": [
+                "Yes",
+                "No"
+            ],
+            "defaultValue": "No"
+        },
         "dnsLabel": {
             "type": "string"
         },
@@ -154,7 +162,10 @@
         "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
         "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
         "commandParam0": "[variables('clusterCertThumbprintParam')]",
-        "commandParam": "[if(equals(trim(parameters('reverseProxyCertificateThumbprint')), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertThumbprintParam')))]"
+        "commandParam": "[if(equals(trim(parameters('reverseProxyCertificateThumbprint')), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertThumbprintParam')))]",
+
+        "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
+        "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration"
     },
     "resources": [
         {
@@ -364,6 +375,22 @@
                                     "typeHandlerVersion": "1.8",
                                     "autoUpgradeMinorVersion": true,
                                     "type": "CustomScriptExtension"
+                                }
+                            },
+                            {
+                                "name": "DeployServiceFabricCluster",
+                                "condition": "[equals(parameters('runDSC'), 'Yes')]",
+                                "properties": {
+                                    "publisher": "Microsoft.Powershell",
+                                    "type": "DSC",
+                                    "typeHandlerVersion": "2.19",
+                                    "autoUpgradeMinorVersion": true,
+                                    "settings": {
+                                        "modulesUrl": "[variables('serviceFabricDeploymentModuleUrl')]",
+                                        "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
+                                        "properties": {
+                                        }
+                                    }
                                 }
                             }
                         ]
