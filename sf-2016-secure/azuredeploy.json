@@ -343,7 +343,7 @@
                         "name": "subnets",
                         "count": "[length(variables('nodeTypeInstanceCounts'))]",
                         "input": {
-                            "name": "[concat(variables('subnetName')[copyIndex('subnets')])]",
+                            "name": "[concat(variables('subnetName'), copyIndex('subnets'))]",
                             "properties": {
                                 "addressPrefix": "[concat(variables('subnetPrefixFirstHalf'), copyIndex('subnets'), variables('subnetPrefixSecondHalf'))]",
                                 "networkSecurityGroup": {
