@@ -439,6 +439,99 @@
                     }
                 }
             }
+        },
+        {
+            "apiVersion": "[variables('apiVersion').templateDeploymentApiVersion]",
+            "name": "[concat('SFDeployment', copyindex())]",
+            "type": "Microsoft.Resources/deployments",
+            "copy": {
+                "name": "SFDeployment",
+                "count": "[length(variables('nodeTypeInstanceCounts'))]"
+            },
+            "dependsOn": [
+                "VMSSProvisioning"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('vmssDeploymentTemplateURL')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vmScaleSetName": {
+                        "value": "[concat(variables('imageConfig').vmssUniqueName, copyIndex())]"
+                    },
+                    "instanceCount": {
+                        "value": "[int(variables('nodeTypeInstanceCounts')[copyIndex()])]"
+                    },
+                    "nodeTypePrefix": {
+                        "value": "[concat(parameters('nodeTypePrefix'), copyIndex())]"
+                    },
+                    "overProvision": {
+                        "value": "[variables('imageConfig').overProvision]"
+                    },
+                    "vmImageSku": {
+                        "value": "[parameters('vmImageSku')]"
+                    },
+                    "vmImagePublisher": {
+                        "value": "[variables('imageConfig').vmImagePublisher]"
+                    },
+                    "vmImageOffer": {
+                        "value": "[variables('imageConfig').vmImageOffer]"
+                    },
+                    "vmImageVersion": {
+                        "value": "[variables('imageConfig').vmImageVersion]"
+                    },
+                    "vmNodeSize": {
+                        "value": "[parameters('vmNodeSize')]"
+                    },
+                    "osDiskName": {
+                        "value": "[concat(variables('imageConfig').osDiskName, copyIndex())]"
+                    },
+                    "vhdContainerName": {
+                        "value": "[concat(variables('imageConfig').vhdContainerName, copyIndex())]"
+                    },
+                    "adminUserName": {
+                        "value": "[parameters('adminUserName')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "runDSC": {
+                        "value": "Yes"
+                    },
+                    "dnsLabel": {
+                        "value": "[if(equals(string(copyIndex()), '0'), variables('dnsLabel'), concat(variables('dnsLabel'), copyIndex()))]"
+                    },
+                    "subnetID": {
+                        "value": "[concat(variables('derivedIds').subnetID, copyIndex())]"
+                    },
+                    "lbPortsArray": {
+                        "value": "[variables('lbPortsArray')]"
+                    },
+                    "sourceVaultValue": {
+                        "value": "[parameters('sourceVaultValue')]"
+                    },
+                    "clusterCertificateUrlValue": {
+                        "value": "[parameters('clusterCertificateUrlValue')]"
+                    },
+                    "certificateStoreValue": {
+                        "value": "[variables('certificateStoreValue')]"
+                    },
+                    "certificateThumbprint": {
+                        "value": "[parameters('certificateThumbprint')]"
+                    },
+                    "reverseProxyCertificateUrlValue": {
+                        "value": "[parameters('reverseProxyCertificateUrlValue')]"
+                    },
+                    "reverseProxyCertificateThumbprint": {
+                        "value": "[parameters('reverseProxyCertificateThumbprint')]"
+                    },
+                    "scriptBaseUrl": {
+                        "value": "[parameters('scriptBaseUrl')]"
+                    }
+                }
+            }
         }
     ],
     "outputs": {
