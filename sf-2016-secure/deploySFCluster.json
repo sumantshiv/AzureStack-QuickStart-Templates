@@ -14,13 +14,13 @@
                 "description": "VM Scaleset name"
             }
         },
-        "instanceCount": {
+        "primaryNtInstanceCount": {
             "type": "int",
             "metadata": {
                 "description": "Number of VM instances."
             }
         },
-        "vmNodeTypeName": {
+        "nodeTypePrefix": {
             "type": "string",
             "maxLength": 9
         },
@@ -248,7 +248,7 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computerNamePrefix": "[parameters('vmNodeTypeName')]",
+                        "computerNamePrefix": "[parameters('nodeTypePrefix')]",
                         "secrets": [
                             {
                                 "sourceVault": {
@@ -314,9 +314,9 @@
                                         "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
                                         "properties": {
                                             "DeploymentNodeIndex": "[variables('deploymentNodeIndex')]",
-                                            "InstanceCount": "[parameters('InstanceCount')]",
+                                            "InstanceCount": "[parameters('primaryNtInstanceCount')]",
                                             "ClusterName": "[parameters('clusterName')]",
-                                            "vmNodeTypeName": "[parameters('vmNodeTypeName')]",
+                                            "nodeTypePrefix": "[parameters('nodeTypePrefix')]",
                                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
@@ -356,7 +356,7 @@
             },
             "sku": {
                 "name": "[parameters('vmNodeSize')]",
-                "capacity": "[parameters('instanceCount')]"
+                "capacity": "[parameters('primaryNtInstanceCount')]"
             },
             "tags": {
                 "resourceType": "Service Fabric",

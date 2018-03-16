@@ -8,7 +8,15 @@
                 "description": "Name of your cluster - Between 3 and 23 characters. Letters and numbers only"
             }
         },
-        "instanceCount": {
+        "nodeTypePrefix": {
+            "type": "string",
+            "defaultValue": "Type01",
+            "maxLength": 9,
+            "metadata": {
+                "description": "Service fabric node type name. Also used for VM scaleset name prefix."
+            }
+        },
+        "primaryNtInstanceCount": {
             "type": "int",
             "metadata": {
                 "description": "Size of the VM scale set (Min 5 and Max 100)."
@@ -17,12 +25,11 @@
             "minValue": 5,
             "maxValue": 100
         },
-        "vmNodeTypeName": {
-            "type": "string",
-            "defaultValue": "Type01",
-            "maxLength": 9,
+        "additionalNodeTypeInstaceCounts": {
+            "type": "array",
+            "defaultValue": [ ],
             "metadata": {
-                "description": "Service fabric node type name. Also used for VM scaleset name prefix."
+                "description": "Comma seperated list of instance counts for additional node types (if any) - (like [3, 5, 2])."
             }
         },
         "vmImagePublisher": {
@@ -75,20 +82,6 @@
             "type": "securestring",
             "metadata": {
                 "description": "Remote desktop user password. Must be a strong password."
-            }
-        },
-        "addressPrefix": {
-            "type": "string",
-            "defaultValue": "10.0.0.0/16",
-            "metadata": {
-                "description": "The address prefix for the cluster’s  virtual network."
-            }
-        },
-        "subnetPrefix": {
-            "type": "string",
-            "defaultValue": "10.0.0.0/24",
-            "metadata": {
-                "description": "The address prefix for the cluster’s subnet in the virtual network. "
             }
         },
         "servicefabricTcpGatewayPort": {
@@ -237,12 +230,16 @@
         "bePoolName": "[concat(variables('uniquePrefix'), 'bepool')]",
         "dnsLabel": "[tolower(parameters('clusterName'))]",
         "diagStoreAccountName": "[toLower(concat('diagSA', uniqueString(resourceGroup().id)))]",
+        "addressPrefix": "10.0.0.0/16",
+        "subnetPrefixFirstHalf": "10.0.",
+        "subnetPrefixSecondHalf": ".0/24",
         "ephemeralStartPort": 49152,
         "ephemeralEndPort": 65534,
         "applicationStartPort": 20000,
         "applicationEndPort": 30000,
         "lbPortsArray": "[concat(array(parameters('servicefabricTcpGatewayPort')), array(parameters('servicefabricHttpGatewayPort')), parameters('lbApplicationPorts'))]",
         "nsgPortsArray": "[concat(variables('lbPortsArray'), parameters('nsgPorts'))]",
+        "nodeTypeInstanceCounts": "[concat(array(parameters('primaryNtInstanceCount')), parameters('additionalNodeTypeInstaceCounts'))]",
         "certificateStoreValue": "My",
 
         "imageConfig": {
@@ -284,16 +281,6 @@
         "nonAdminClientCertificateThumbprint": "[split(trim(parameters('nonAdminClientCertificateThumbprints')), variables('delimiters'))]"
     },
     "resources": [
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "name": "[variables('imageConfig').storageAccountName]",
-            "apiVersion": "[variables('apiVersion').storageApiVersion]",
-            "location": "[variables('location')]",
-            "sku": {
-                "name": "[variables('imageConfig').storageAccountType]"
-            },
-            "kind": "Storage"
-        },
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('diagStoreAccountName')]",
@@ -348,18 +335,21 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('addressPrefix')]"
+                        "[variables('addressPrefix')]"
                     ]
                 },
-                "subnets": [
+                "copy": [
                     {
-                        "name": "[variables('subnetName')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnetPrefix')]",
-                            "networkSecurityGroup": {
-                                "id": "[variables('frontEndNSGID')]"
+                        "name": "subnets",
+                        "count": "[length(variables('nodeTypeInstanceCounts'))]",
+                        "input": {
+                            "name": "[concat(variables('subnetName')[copyIndex('subnets')])]",
+                            "properties": {
+                                "addressPrefix": "[concat(variables('subnetPrefixFirstHalf'), copyIndex('subnets'), variables('subnetPrefixSecondHalf'))]",
+                                "networkSecurityGroup": {
+                                    "id": "[variables('frontEndNSGID')]"
+                                }
                             }
-
                         }
                     }
                 ]
@@ -474,6 +464,16 @@
             }
         },
         {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('imageConfig').storageAccountName]",
+            "apiVersion": "[variables('apiVersion').storageApiVersion]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[variables('imageConfig').storageAccountType]"
+            },
+            "kind": "Storage"
+        },
+        {
             "apiVersion": "[variables('apiVersion').vmssApiVersion]",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[variables('imageConfig').vmssUniqueName]",
@@ -521,7 +521,7 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computerNamePrefix": "[parameters('vmNodeTypeName')]",
+                        "computerNamePrefix": "[parameters('nodeTypePrefix')]",
                         "secrets": [
                             {
                                 "sourceVault": {
@@ -581,7 +581,7 @@
             },
             "sku": {
                 "name": "[parameters('vmNodeSize')]",
-                "capacity": "[parameters('instanceCount')]"
+                "capacity": "[parameters('primaryNtInstanceCount')]"
             },
             "tags": {
                 "resourceType": "Service Fabric",
@@ -610,11 +610,11 @@
                     "vmScaleSetName": {
                         "value": "[variables('imageConfig').vmssUniqueName]"
                     },
-                    "instanceCount": {
-                        "value": "[parameters('instanceCount')]"
+                    "primaryNtInstanceCount": {
+                        "value": "[parameters('primaryNtInstanceCount')]"
                     },
-                    "vmNodeTypeName": {
-                        "value": "[parameters('vmNodeTypeName')]"
+                    "nodeTypePrefix": {
+                        "value": "[parameters('nodeTypePrefix')]"
                     },
                     "overProvision": {
                         "value": "[variables('imageConfig').overProvision]"
