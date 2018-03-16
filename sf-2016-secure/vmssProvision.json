@@ -165,7 +165,60 @@
         "commandParam": "[if(equals(trim(parameters('reverseProxyCertificateThumbprint')), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertThumbprintParam')))]",
 
         "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
-        "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration"
+        "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
+
+        "vmssExtensions0": [
+            {
+                "name": "PrepareServiceFabric",
+                "properties": {
+                    "publisher": "Microsoft.Compute",
+                    "settings": {
+                        "fileUris": [
+                            "[variables('serviceFabricPrepareScriptUrl')]"
+                        ],
+                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
+                    },
+                    "typeHandlerVersion": "1.8",
+                    "autoUpgradeMinorVersion": true,
+                    "type": "CustomScriptExtension"
+                }
+            }
+        ],
+
+        "vmssExtensions1": [
+            {
+                "name": "PrepareServiceFabric",
+                "properties": {
+                    "publisher": "Microsoft.Compute",
+                    "settings": {
+                        "fileUris": [
+                            "[variables('serviceFabricPrepareScriptUrl')]"
+                        ],
+                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
+                    },
+                    "typeHandlerVersion": "1.8",
+                    "autoUpgradeMinorVersion": true,
+                    "type": "CustomScriptExtension"
+                }
+            },
+            {
+                "name": "DeployServiceFabricCluster",
+                "properties": {
+                    "publisher": "Microsoft.Powershell",
+                    "type": "DSC",
+                    "typeHandlerVersion": "2.19",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "modulesUrl": "[variables('serviceFabricDeploymentModuleUrl')]",
+                        "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
+                        "properties": {
+                        }
+                    }
+                }
+            }
+        ]
+
+
     },
     "resources": [
         {
@@ -361,39 +414,7 @@
                         }
                     },
                     "extensionProfile": {
-                        "extensions": [
-                            {
-                                "name": "PrepareServiceFabric",
-                                "properties": {
-                                    "publisher": "Microsoft.Compute",
-                                    "settings": {
-                                        "fileUris": [
-                                            "[variables('serviceFabricPrepareScriptUrl')]"
-                                        ],
-                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
-                                    },
-                                    "typeHandlerVersion": "1.8",
-                                    "autoUpgradeMinorVersion": true,
-                                    "type": "CustomScriptExtension"
-                                }
-                            },
-                            {
-                                "name": "DeployServiceFabricCluster",
-                                "condition": "[equals(parameters('runDSC'), 'Yes')]",
-                                "properties": {
-                                    "publisher": "Microsoft.Powershell",
-                                    "type": "DSC",
-                                    "typeHandlerVersion": "2.19",
-                                    "autoUpgradeMinorVersion": true,
-                                    "settings": {
-                                        "modulesUrl": "[variables('serviceFabricDeploymentModuleUrl')]",
-                                        "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
-                                        "properties": {
-                                        }
-                                    }
-                                }
-                            }
-                        ]
+                        "extensions": "[if(equals(parameters('runDSC'), 'Yes'), variables('vmssExtensions1'), variables('vmssExtensions0'))]"
                     }
                 }
             },
