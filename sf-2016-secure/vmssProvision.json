@@ -145,7 +145,6 @@
             "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/', variables('bePoolName'))]"
         },
 
-
         "isReverseProxyCert": "[if(equals(trim(parameters('reverseProxyCertificateUrlValue')), ''), bool('false'), bool('true'))]",
         "isSameCert": "[if(equals(parameters('clusterCertificateUrlValue'), parameters('reverseProxyCertificateUrlValue')), bool('true'), bool('false'))]",
         "certsToInstall": "[if(or(not(variables('isReverseProxyCert')), variables('isSameCert')), array(parameters('clusterCertificateUrlValue')), concat(array(parameters('clusterCertificateUrlValue')), array(parameters('reverseProxyCertificateUrlValue'))))]",
@@ -359,13 +358,11 @@
                                     "settings": {
                                         "fileUris": [
                                             "[variables('serviceFabricPrepareScriptUrl')]"
-                                        ]
+                                        ],
+                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
                                     },
                                     "typeHandlerVersion": "1.8",
                                     "autoUpgradeMinorVersion": true,
-                                    "protectedSettings": {
-                                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
-                                    },
                                     "type": "CustomScriptExtension"
                                 }
                             }
