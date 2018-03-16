@@ -175,11 +175,13 @@
                     "settings": {
                         "fileUris": [
                             "[variables('serviceFabricPrepareScriptUrl')]"
-                        ],
-                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
+                        ]
                     },
                     "typeHandlerVersion": "1.8",
                     "autoUpgradeMinorVersion": true,
+                    "protectedSettings": {
+                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
+                    },
                     "type": "CustomScriptExtension"
                 }
             }
@@ -193,11 +195,13 @@
                     "settings": {
                         "fileUris": [
                             "[variables('serviceFabricPrepareScriptUrl')]"
-                        ],
-                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
+                        ]
                     },
                     "typeHandlerVersion": "1.8",
                     "autoUpgradeMinorVersion": true,
+                    "protectedSettings": {
+                        "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ',variables('scriptName'), variables('commandParam'))]"
+                    },
                     "type": "CustomScriptExtension"
                 }
             },
