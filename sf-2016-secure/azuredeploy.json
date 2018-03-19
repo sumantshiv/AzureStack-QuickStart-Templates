@@ -467,9 +467,6 @@
                     "nonAdminClientCertificateThumbprint": {
                         "value": "[variables('nonAdminClientCertificateThumbprint')]"
                     },
-                    "ClientConnectionEndpoint": {
-                        "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
-                    },
                     "DNSService": {
                         "value": "[parameters('DNSService')]"
                     },
@@ -503,6 +500,9 @@
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
+                    "clusterName": {
+                        "value": "[parameters('clusterName')]"
+                    },
                     "vmScaleSetName": {
                         "value": "[concat(variables('imageConfig').vmssUniqueName, copyIndex())]"
                     },
@@ -533,6 +533,9 @@
                     "osDiskName": {
                         "value": "[concat(variables('imageConfig').osDiskName, copyIndex())]"
                     },
+                    "diagStoreAccountName": {
+                        "value": "[variables('diagStoreAccountName')]"
+                    },
                     "vhdContainerName": {
                         "value": "[concat(variables('imageConfig').vhdContainerName, copyIndex())]"
                     },
@@ -541,9 +544,6 @@
                     },
                     "adminPassword": {
                         "value": "[parameters('adminPassword')]"
-                    },
-                    "runDSC": {
-                        "value": "Yes"
                     },
                     "dnsLabel": {
                         "value": "[if(equals(string(copyIndex()), '0'), variables('dnsLabel'), concat(variables('dnsLabel'), copyIndex()))]"
@@ -571,6 +571,42 @@
                     },
                     "reverseProxyCertificateThumbprint": {
                         "value": "[parameters('reverseProxyCertificateThumbprint')]"
+                    },
+                    "servicefabricTcpGatewayPort": {
+                        "value": "[parameters('servicefabricTcpGatewayPort')]"
+                    },
+                    "servicefabricHttpGatewayPort": {
+                        "value": "[parameters('servicefabricHttpGatewayPort')]"
+                    },
+                    "servicereverseProxyEndpointPort": {
+                        "value": "[parameters('servicefabricReverseProxyEndpointPort')]"
+                    },
+                    "ephemeralStartPort": {
+                        "value": "[variables('ephemeralStartPort')]"
+                    },
+                    "ephemeralEndPort": {
+                        "value": "[variables('ephemeralEndPort')]"
+                    },
+                    "applicationStartPort": {
+                        "value": "[variables('applicationStartPort')]"
+                    },
+                    "applicationEndPort": {
+                        "value": "[variables('applicationEndPort')]"
+                    },
+                    "adminClientCertificateThumbprint": {
+                        "value": "[variables('adminClientCertificateThumbprint')]"
+                    },
+                    "nonAdminClientCertificateThumbprint": {
+                        "value": "[variables('nonAdminClientCertificateThumbprint')]"
+                    },
+                    "DNSService": {
+                        "value": "[parameters('DNSService')]"
+                    },
+                    "RepairManager": {
+                        "value": "[parameters('RepairManager')]"
+                    },
+                    "serviceFabricUrl": {
+                        "value": "[parameters('serviceFabricUrl')]"
                     },
                     "scriptBaseUrl": {
                         "value": "[parameters('scriptBaseUrl')]"

@@ -291,7 +291,7 @@
                             "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
                             "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
                             "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",
-                            "ClientConnectionEndpoint": "[if(equals(parameters('runDSC'), 'Yes'), concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort')), '')]",
+                            "ClientConnectionEndpoint": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]",
                             "DNSService": "[parameters('DNSService')]",
                             "RepairManager": "[parameters('RepairManager')]",
                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
