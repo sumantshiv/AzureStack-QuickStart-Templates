@@ -2,6 +2,12 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "clusterName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of your cluster - Between 3 and 23 characters. Letters and numbers only"
+            }
+        },
         "vmScaleSetName": {
             "type": "string",
             "metadata": {
@@ -62,6 +68,9 @@
             ],
             "defaultValue": "No"
         },
+        "diagStoreAccountName": {
+            "type": "string"
+        },
         "dnsLabel": {
             "type": "string"
         },
@@ -115,6 +124,53 @@
                 "description": "Reverse proxy Certificate Thumbprint"
             }
         },
+        "servicefabricTcpGatewayPort": {
+            "type": "int"
+        },
+        "servicefabricHttpGatewayPort": {
+            "type": "int"
+        },
+        "servicereverseProxyEndpointPort": {
+            "type": "int"
+        },
+        "ephemeralStartPort": {
+            "type": "int"
+        },
+        "ephemeralEndPort": {
+            "type": "int"
+        },
+        "applicationStartPort": {
+            "type": "int"
+        },
+        "applicationEndPort": {
+            "type": "int"
+        },
+        "adminClientCertificateThumbprint": {
+            "type": "array",
+            "defaultValue": [ ],
+            "metadata": {
+                "description": "Admin client Certificate Thumbprint"
+            }
+        },
+        "nonAdminClientCertificateThumbprint": {
+            "type": "array",
+            "defaultValue": [ ],
+            "metadata": {
+                "description": "Non-Admin client Certificate Thumbprint"
+            }
+        },
+        "DNSService": {
+            "type": "string"
+        },
+        "RepairManager": {
+            "type": "string"
+        },
+        "serviceFabricUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Service fabric runtime download url."
+            }
+        },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
@@ -166,6 +222,9 @@
 
         "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
         "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
+        "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.X509.MultiMachine.json')]",
+
+        "deploymentNodeIndex": 0,
 
         "vmssExtensions0": [
             {
@@ -216,6 +275,31 @@
                         "modulesUrl": "[variables('serviceFabricDeploymentModuleUrl')]",
                         "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
                         "properties": {
+                            "DeploymentNodeIndex": "[variables('deploymentNodeIndex')]",
+                            "InstanceCount": "[parameters('instanceCount')]",
+                            "ClusterName": "[parameters('clusterName')]",
+                            "nodeTypePrefix": "[parameters('nodeTypePrefix')]",
+                            "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
+                            "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
+                            "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
+                            "ephemeralStartPort": "[parameters('ephemeralStartPort')]",
+                            "ephemeralEndPort": "[parameters('ephemeralEndPort')]",
+                            "applicationStartPort": "[parameters('applicationStartPort')]",
+                            "applicationEndPort": "[parameters('applicationEndPort')]",
+                            "certificateStoreValue": "[parameters('certificateStoreValue')]",
+                            "certificateThumbprint": "[parameters('certificateThumbprint')]",
+                            "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
+                            "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
+                            "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",
+                            "ClientConnectionEndpoint": "[if(equals(parameters('runDSC'), 'Yes'), concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort')), '')]",
+                            "DNSService": "[parameters('DNSService')]",
+                            "RepairManager": "[parameters('RepairManager')]",
+                            "ConfigPath": "[variables('serviceFabricConfigPath')]",
+                            "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
+                            "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
+                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                            "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
+                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
                         }
                     }
                 }
