@@ -71,6 +71,15 @@
         "diagStoreAccountName": {
             "type": "string"
         },
+        "diagStoreAccountKey": {
+            "type": "string"
+        },
+        "diagStoreAccountBlobUrl": {
+            "type": "string"
+        },
+        "diagStoreAccountTableUrl": {
+            "type": "string"
+        },
         "dnsLabel": {
             "type": "string"
         },
@@ -144,6 +153,9 @@
         },
         "applicationEndPort": {
             "type": "int"
+        },
+        "adminClientConnectionEndpoint": {
+            "type": "string"
         },
         "adminClientCertificateThumbprint": {
             "type": "array",
@@ -291,15 +303,15 @@
                             "reverseProxyCertificateThumbprint": "[parameters('reverseProxyCertificateThumbprint')]",
                             "adminClientCertificateThumbprint": "[parameters('adminClientCertificateThumbprint')]",
                             "nonAdminClientCertificateThumbprint": "[parameters('nonAdminClientCertificateThumbprint')]",
-                            "ClientConnectionEndpoint": "[if(equals(parameters('runDSC'), 'Yes'), concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort')), '')]",
+                            "ClientConnectionEndpoint": "[parameters('adminClientConnectionEndpoint')]",
                             "DNSService": "[parameters('DNSService')]",
                             "RepairManager": "[parameters('RepairManager')]",
                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
-                            "DiagStoreAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
-                            "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
-                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
+                            "DiagStoreAccountKey": "[parameters('diagStoreAccountKey')]",
+                            "DiagStoreAccountBlobUri": "[parameters('diagStoreAccountBlobUri')]",
+                            "DiagStoreAccountTableUri": "[parameters('diagStoreAccountTableUri')]"
                         }
                     }
                 }
@@ -307,23 +319,6 @@
         ]
     },
     "resources": [
-        {
-            "apiVersion": "[variables('apiVersion').publicIPApiVersion]",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('lbIPName')]",
-            "location": "[variables('location')]",
-            "dependsOn": [ ],
-            "properties": {
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('dnsLabel')]"
-                },
-                "publicIPAllocationMethod": "Dynamic"
-            },
-            "tags": {
-                "resourceType": "Service Fabric",
-                "displayName": "PublicIP"
-            }
-        },
         {
             "apiVersion": "[variables('apiVersion').lbApiVersion]",
             "type": "Microsoft.Network/loadBalancers",
