@@ -298,8 +298,8 @@
                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                             "DiagStoreAccountKey": "",
-                            "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]",
-                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
+                            "DiagStoreAccountBlobUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01', 'Full').primaryEndpoints.blob]",
+                            "DiagStoreAccountTableUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('diagStoreAccountName')), '2016-01-01', 'Full').primaryEndpoints.table]"
                         }
                     }
                 }
