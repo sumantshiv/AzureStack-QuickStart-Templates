@@ -86,6 +86,9 @@
         "subnetID": {
             "type": "string"
         },
+        "publicIPID" :{
+            "type": "string"
+        },
         "lbPortsArray": {
             "type": "array",
             "defaultValue": [ ],
@@ -209,8 +212,6 @@
         "nicName": "[concat(parameters('vmScaleSetName'), 'nic')]",
         "lbName": "[concat(parameters('vmScaleSetName'), 'lb')]",
         "lbID": "[resourceId('Microsoft.Network/loadBalancers', variables('lbName'))]",
-        "lbIPName": "[concat(parameters('vmScaleSetName'), 'pip')]",
-        "lbPublicIPID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbIPName'))]",
         "bePoolName": "[concat(parameters('vmScaleSetName'), 'bepool')]",
         "natPoolName": "[concat(parameters('vmScaleSetName'), 'natpool')]",
         "ipConfigName": "[concat(parameters('vmScaleSetName'), 'ipconfig')]",
@@ -330,7 +331,7 @@
                         "name": "LoadBalancerIPConfig",
                         "properties": {
                             "publicIPAddress": {
-                                "id": "[variables('lbPublicIPID')]"
+                                "id": "[parameters('publicIPID')]"
                             }
                         }
                     }
