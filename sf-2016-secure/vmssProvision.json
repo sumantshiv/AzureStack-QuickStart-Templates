@@ -291,7 +291,7 @@
                             "DeploymentNodeIndex": "[variables('deploymentNodeIndex')]",
                             "InstanceCount": "[parameters('instanceCount')]",
                             "ClusterName": "[parameters('clusterName')]",
-                            "nodeTypePrefix": "[parameters('nodeTypePrefix')]",
+                            "VMNodeTypeName": "[parameters('nodeTypePrefix')]",
                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
