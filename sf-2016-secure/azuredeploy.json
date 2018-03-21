@@ -253,7 +253,6 @@
         "sfDeploymentTemplateURL": "[uri(parameters('scriptBaseUrl'), 'deploySFCluster.json')]",
         "vmssDeploymentTemplateURL": "[uri(parameters('scriptBaseUrl'), 'vmssProvision.json')]",
 
-
         "scriptName": "PrepareServiceFabricDeployment.ps1",
         "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), variables('scriptName'))]",
 
@@ -315,41 +314,62 @@
             }
         },
         {
-            "apiVersion": "[variables('apiVersion').vNetApiVersion]",
-            "type": "Microsoft.Network/virtualNetworks",
-            "name": "[variables('virtualNetworkName')]",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[variables('frontEndNSGID')]"
-            ],
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('addressPrefix')]"
-                    ]
-                },
-                "copy": [
-                    {
-                        "name": "subnets",
-                        "count": "[length(variables('nodeTypeInstanceCounts'))]",
-                        "input": {
-                            "name": "[concat(variables('subnetName'), copyIndex('subnets'))]",
-                            "properties": {
-                                "addressPrefix": "[concat(variables('subnetPrefixFirstHalf'), copyIndex('subnets'), variables('subnetPrefixSecondHalf'))]",
-                                "networkSecurityGroup": {
-                                    "id": "[variables('frontEndNSGID')]"
+                "apiVersion": "[variables('apiVersion').vNetApiVersion]",
+                "type": "Microsoft.Network/virtualNetworks",
+                "name": "[variables('virtualNetworkName')]",
+                "location": "[variables('location')]",
+                "dependsOn": [
+                    "[variables('frontEndNSGID')]"
+                ],
+                "properties": {
+                    "addressSpace": {
+                        "addressPrefixes": [
+                            "[variables('addressPrefix')]"
+                        ]
+                    },
+                    "copy": [
+                        {
+                            "name": "subnets",
+                            "count": "[length(variables('nodeTypeInstanceCounts'))]",
+                            "input": {
+                                "name": "[concat(variables('subnetName'), copyIndex('subnets'))]",
+                                "properties": {
+                                    "addressPrefix": "[concat(variables('subnetPrefixFirstHalf'), copyIndex('subnets'), variables('subnetPrefixSecondHalf'))]",
+                                    "networkSecurityGroup": {
+                                        "id": "[variables('frontEndNSGID')]"
+                                    }
                                 }
                             }
                         }
-                    }
-                ]
+                    ]
+                },
+                "tags": {
+                    "resourceType": "Service Fabric",
+                    "clusterName": "[parameters('clusterName')]",
+                    "displayName": "VirtualNetwork"
+                }
             },
-            "tags": {
-                "resourceType": "Service Fabric",
-                "clusterName": "[parameters('clusterName')]",
-                "displayName": "VirtualNetwork"
-            }
-        },
+        {
+                "apiVersion": "[variables('apiVersion').publicIPApiVersion]",
+                "type": "Microsoft.Network/publicIPAddresses",
+                "name": "[concat(concat(variables('imageConfig').vmssUniqueName, copyIndex()), 'pip')]",
+                "location": "[variables('location')]",
+                "copy": {
+                     "name": "PublicIPProvisioning",
+                     "count": "[length(variables('nodeTypeInstanceCounts'))]"
+                },
+                "dependsOn": [ ],
+                "properties": {
+                    "dnsSettings": {
+                        "domainNameLabel": "[if(equals(string(copyIndex()), '0'), variables('dnsLabel'), concat(variables('dnsLabel'), copyIndex()))]"
+                    },
+                    "publicIPAllocationMethod": "Dynamic"
+                },
+                "tags": {
+                    "resourceType": "Service Fabric",
+                    "displayName": "PublicIP"
+                }
+            },
         {
             "apiVersion": "[variables('apiVersion').templateDeploymentApiVersion]",
             "name": "[concat('VMSSProvisioning', copyindex())]",
@@ -359,7 +379,8 @@
                 "count": "[length(variables('nodeTypeInstanceCounts'))]"
             },
             "dependsOn": [
-                "[variables('vnetID')]"
+                "[variables('vnetID')]",
+                "PublicIPProvisioning"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -403,6 +424,15 @@
                     },
                     "diagStoreAccountName": {
                         "value": "[variables('diagStoreAccountName')]"
+                    },
+                    "diagStoreAccountKey": {
+                        "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+                    },
+                    "diagStoreAccountBlobUri": {
+                        "value": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]"
+                    },
+                    "diagStoreAccountTableUri": {
+                        "value": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
                     },
                     "vhdContainerName": {
                         "value": "[concat(variables('imageConfig').vhdContainerName, copyIndex())]"
@@ -463,6 +493,9 @@
                     },
                     "adminClientCertificateThumbprint": {
                         "value": "[variables('adminClientCertificateThumbprint')]"
+                    },
+                    "adminClientConnectionEndpoint": {
+                        "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', concat(concat(variables('imageConfig').vmssUniqueName, copyIndex()), 'pip')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
                     },
                     "nonAdminClientCertificateThumbprint": {
                         "value": "[variables('nonAdminClientCertificateThumbprint')]"
@@ -536,6 +569,15 @@
                     "diagStoreAccountName": {
                         "value": "[variables('diagStoreAccountName')]"
                     },
+                    "diagStoreAccountKey": {
+                        "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('diagStoreAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+                    },
+                    "diagStoreAccountBlobUri": {
+                        "value": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName')), '2016-01-01').primaryEndpoints.blob]"
+                    },
+                    "diagStoreAccountTableUri": {
+                        "value": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('diagStoreAccountName')), '2016-01-01').primaryEndpoints.table]"
+                    },
                     "vhdContainerName": {
                         "value": "[concat(variables('imageConfig').vhdContainerName, copyIndex())]"
                     },
@@ -544,6 +586,9 @@
                     },
                     "adminPassword": {
                         "value": "[parameters('adminPassword')]"
+                    },
+                    "runDSC": {
+                        "value": "Yes"
                     },
                     "dnsLabel": {
                         "value": "[if(equals(string(copyIndex()), '0'), variables('dnsLabel'), concat(variables('dnsLabel'), copyIndex()))]"
@@ -595,6 +640,9 @@
                     },
                     "adminClientCertificateThumbprint": {
                         "value": "[variables('adminClientCertificateThumbprint')]"
+                    },
+                    "adminClientConnectionEndpoint": {
+                        "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', concat(concat(variables('imageConfig').vmssUniqueName, copyIndex()), 'pip')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
                     },
                     "nonAdminClientCertificateThumbprint": {
                         "value": "[variables('nonAdminClientCertificateThumbprint')]"
