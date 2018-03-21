@@ -449,6 +449,9 @@
                     "subnetID": {
                         "value": "[concat(variables('derivedIds').subnetID, copyIndex())]"
                     },
+                    "publicIPID": {
+                        "value": "[resourceId('Microsoft.Network/publicIPAddresses', concat(concat(variables('imageConfig').vmssUniqueName, copyIndex()), 'pip'))]"
+                    },
                     "lbPortsArray": {
                         "value": "[variables('lbPortsArray')]"
                     },
@@ -595,6 +598,9 @@
                     },
                     "subnetID": {
                         "value": "[concat(variables('derivedIds').subnetID, copyIndex())]"
+                    },
+                    "publicIPID": {
+                        "value": "[resourceId('Microsoft.Network/publicIPAddresses', concat(concat(variables('imageConfig').vmssUniqueName, copyIndex()), 'pip'))]"
                     },
                     "lbPortsArray": {
                         "value": "[variables('lbPortsArray')]"
