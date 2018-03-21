@@ -310,8 +310,8 @@
                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                             "DiagStoreAccountKey": "[parameters('diagStoreAccountKey')]",
-                            "DiagStoreAccountBlobUri": "[parameters('diagStoreAccountBlobUri')]",
-                            "DiagStoreAccountTableUri": "[parameters('diagStoreAccountTableUri')]"
+                            "DiagStoreAccountBlobUri": "[parameters('diagStoreAccountBlobUrl')]",
+                            "DiagStoreAccountTableUri": "[parameters('diagStoreAccountTableUrl')]"
                         }
                     }
                 }
