@@ -324,9 +324,6 @@
             "type": "Microsoft.Network/loadBalancers",
             "name": "[variables('lbName')]",
             "location": "[variables('location')]",
-            "dependsOn": [
-                "[variables('lbPublicIPID')]"
-            ],
             "properties": {
                 "frontendIPConfigurations": [
                     {
