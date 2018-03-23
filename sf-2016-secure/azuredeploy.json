@@ -358,7 +358,9 @@
                      "name": "PublicIPProvisioning",
                      "count": "[length(variables('nodeTypeInstanceCounts'))]"
                 },
-                "dependsOn": [ ],
+                "dependsOn": [
+                    "[variables('vnetID')]"
+                ],
                 "properties": {
                     "dnsSettings": {
                         "domainNameLabel": "[if(equals(string(copyIndex()), '0'), variables('dnsLabel'), concat(variables('dnsLabel'), copyIndex()))]"
@@ -379,7 +381,6 @@
                 "count": "[length(variables('nodeTypeInstanceCounts'))]"
             },
             "dependsOn": [
-                "[variables('vnetID')]",
                 "PublicIPProvisioning"
             ],
             "properties": {
