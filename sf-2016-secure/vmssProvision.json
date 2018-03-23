@@ -14,15 +14,21 @@
                 "description": "VM Scaleset name"
             }
         },
-        "instanceCount": {
-            "type": "int",
-            "metadata": {
-                "description": "Number of VM instances."
-            }
-        },
         "nodeTypePrefix": {
             "type": "string",
             "maxLength": 9
+        },
+        "nodeTypeInstanceCounts": {
+            "type": "array",
+            "metadata": {
+                "description": "List of instance counts for all node types."
+            }
+        },
+         "nodeTypeIndex": {
+            "type": "int",
+            "metadata": {
+                "description": "Current node type index."
+            }
         },
         "overProvision": {
             "type": "string"
@@ -285,9 +291,10 @@
                         "configurationFunction": "[variables('serviceFabricDeploymentConfigFunction')]",
                         "properties": {
                             "DeploymentNodeIndex": "[variables('deploymentNodeIndex')]",
-                            "InstanceCount": "[parameters('instanceCount')]",
                             "ClusterName": "[parameters('clusterName')]",
-                            "VMNodeTypeName": "[parameters('nodeTypePrefix')]",
+                            "VMNodeTypePrefix": "[parameters('nodeTypePrefix')]",
+                            "VMNodeTypeInstanceCounts": "[parameters('nodeTypeInstanceCounts')]",
+                            "VMNodeTypeIndex": "[parameters('nodeTypeIndex')]",
                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
@@ -503,7 +510,7 @@
             },
             "sku": {
                 "name": "[parameters('vmNodeSize')]",
-                "capacity": "[parameters('instanceCount')]"
+                "capacity": "[parameters('nodeTypeInstanceCounts')[parameters('nodeTypeIndex')]]"
             },
             "tags": {
                 "resourceType": "Service Fabric",
