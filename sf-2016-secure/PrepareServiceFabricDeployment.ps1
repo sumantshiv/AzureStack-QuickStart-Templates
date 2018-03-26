@@ -1,33 +1,8 @@
 ﻿param
 (
-        [Parameter(Mandatory=$true)]
-        [string] $StorageAccessKey,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $StorageAccountName,
-        
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $ContainerName,
-
-        [Parameter(Mandatory=$false)]
-        [string] $EnvironmentName = "AzureCloud",
-
-        [Parameter(Mandatory=$true)]
-        [string] $ClusterCertName,
-
-        [Parameter(Mandatory=$true)]
-        [string] $ClusterCertPassword,
 
         [Parameter(Mandatory=$true)]
         [string] $CertificateThumbprint,
-
-        [Parameter(Mandatory=$false)]
-        [string] $ReverseProxyCertName="",
-
-        [Parameter(Mandatory=$false)]
-        [string] $ReverseProxyCertPassword="",
 
         [Parameter(Mandatory=$false)]
         [string] $ReverseProxyCertificateThumbprint=""
@@ -41,90 +16,6 @@ Write-Verbose "Opening TCP firewall port 445 for networking."
 Set-NetFirewallRule -Name 'FPS-SMB-In-TCP' -Enabled True
 Get-NetFirewallRule -DisplayGroup 'Network Discovery' | Set-NetFirewallRule -Profile 'Private, Public' -Enabled true
 
-<#
-.SYNOPSIS
-[Helper function] Download artifacts from Azure private container.
-#>
-function Get-InfraFileFromAzure
-{
-    param
-    (
-        [Parameter(Mandatory=$true)]
-        [string] $StorageAccessKey,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $StorageAccountName,
-        
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $AzureContainerName,
-
-        [Parameter(Mandatory=$false)]
-        [string] $AzureEnvironmentName = "AzureCloud",
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $BlobName,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $LocalOutPath
-    )
-
-    $success = $false
-    $retries = 20
-
-    while($success -eq $false -and $retries -ge 0)
-    {
-        $success = $true
-        
-        try
-        {
-            $TargetLocalRootPath = Join-Path -Path $LocalOutPath  -ChildPath $BlobName
-
-            if(Test-Path -Path $TargetLocalRootPath)
-            {                
-                return $TargetLocalRootPath
-            }
-            
-            $storageContext = New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccessKey -Environment $AzureEnvironmentName
-            Get-AzureStorageBlobContent -Blob $BlobName -Container $AzureContainerName -Destination $LocalOutPath -Context $storageContext | Out-Null
-        }
-        catch
-        {
-            $success = $false
-            Start-Sleep -Seconds 10
-        }
-        $retries--
-        if($success = $false)
-        {
-            Start-Sleep -Seconds 10
-        }
-
-    }
-    if($success -eq $false)
-    {
-        $errMsg =  "Failed to download $blobName from Azure after retries"
-        throw $errMsg
-    }
-}
-
-<#
-.SYNOPSIS
-[Helper function] Installs Azure RM PowerShell module if absent.
-#>
-function Get-ARMPSModule
-{
-    $module = Get-Module -ListAvailable | ? Name -eq "AzureRM"
-
-    if(-not $module)
-    {
-        Get-Packageprovider -Name NuGet -Force
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-        Install-Module -Name AzureRM -RequiredVersion "1.2.11"
-    }
-}
 
 # As per Service fabric documentation at: https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-windows-cluster-x509-security#install-the-certificates
 # set the access control on this certificate so that the Service Fabric process, which runs under the Network Service account, 
@@ -166,52 +57,12 @@ function Grant-CertAccess
     get-acl $keyFullPath| fl
 }
 
-# Install ARM PS cmdlets.
-Get-ARMPSModule
+# Grant Network Service access to certificates as per the documentation at: 
+# https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-windows-cluster-x509-security#install-the-certificates
 
-$localDir = $env:Temp
+Grant-CertAccess -pfxThumbPrint $CertificateThumbprint -serviceAccount "Network Service"
 
-$certPwdMapping = @{}
-if( -not $certPwdMapping.ContainsKey($ClusterCertName))
+if($ReverseProxyCertificateThumbprint)
 {
-    $certPwdMapping.Add($ClusterCertName, $ClusterCertPassword)
+    Grant-CertAccess -pfxThumbPrint $ReverseProxyCertificateThumbprint -serviceAccount "Network Service"
 }
-
-if(-not [string]::IsNullOrEmpty($ReverseProxyCertName))
-{
-    if( -not $certPwdMapping.ContainsKey($ReverseProxyCertName))
-    {
-        $certPwdMapping.Add($ReverseProxyCertName, $ReverseProxyCertPassword)
-    }
-}
-
-$certThumbprintMapping = @{}
-if( -not $certThumbprintMapping.ContainsKey($ClusterCertName))
-{
-    $certThumbprintMapping.Add($ClusterCertName, $certificateThumbprint)
-}
-
-if(-not ([string]::IsNullOrEmpty($ReverseProxyCertName)) -and -not([string]::IsNullOrEmpty($ReverseProxyCertificateThumbprint)))
-{
-    if( -not $certThumbprintMapping.ContainsKey($ReverseProxyCertName))
-    {
-        $certThumbprintMapping.Add($ReverseProxyCertName, $reverseProxyCertificateThumbprint)
-    }
-}
-
-$certPwdMapping.Keys | % {
-                    Get-InfraFileFromAzure -StorageAccessKey $StorageAccessKey `
-                                            -BlobName $_ `
-                                            -StorageAccountName $StorageAccountName `
-                                            -AzureContainerName $ContainerName `
-                                            -AzureEnvironmentName $EnvironmentName `
-                                            -LocalOutPath  $localDir
-
-                    # Import Certs.
-                    $certPath = Join-Path -Path $localDir -ChildPath $_
-                    Import-PfxCertificate -Exportable -CertStoreLocation Cert:\LocalMachine\My -FilePath $certPath -Password (ConvertTo-SecureString -String $($certPwdMapping.$_) -AsPlainText -Force)
-
-                    # Grant Network Service access to certificates as per the documentation at: 
-                    # https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-windows-cluster-x509-security#install-the-certificates
-                    Grant-CertAccess -pfxThumbPrint $($certThumbprintMapping.$_) -serviceAccount "Network Service"
-                }

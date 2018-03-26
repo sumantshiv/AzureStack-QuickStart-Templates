@@ -114,29 +114,22 @@
         },
         "lbApplicationPorts": {
             "type": "array",
-            "defaultValue": [],
+            "defaultValue": [ ],
             "metadata": {
                 "description": "Array of application ports to be opened (like [80, 8080, 8081])."
             }
         },
-        "certBlobCloudName": {
+        "sourceVaultValue": {
             "type": "string",
-            "defaultValue": "AzureCloud"
+            "metadata": {
+                "description": "Resource Id of the key vault, is should be in the format of /subscriptions/<Sub ID>/resourceGroups/<Resource group name>/providers/Microsoft.KeyVault/vaults/<vault name>"
+            }
         },
-        "certBlobAccountName": {
-            "type": "string"
-        },
-        "certBlobSASKey": {
-            "type": "string"
-        },
-        "certBlobContainerName": {
-            "type": "string"
-        },
-        "clusterCertificateName": {
-            "type": "string"
-        },
-        "clusterCertificatePassword": {
-            "type": "securestring"
+        "clusterCertificateUrlValue": {
+            "type": "string",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
         },
         "certificateThumbprint": {
             "type": "string",
@@ -144,13 +137,12 @@
                 "description": "Certificate Thumbprint"
             }
         },
-        "reverseProxyCertificateName": {
+        "reverseProxyCertificateUrlValue": {
             "type": "string",
-            "defaultValue": ""
-        },
-        "reverseProxyCertificatePassword": {
-            "type": "securestring",
-            "defaultValue": ""
+            "defaultValue": "",
+            "metadata": {
+                "description": "Refers to the location URL in your key vault where the certificate was uploaded, it is should be in the format of https://<name of the vault>.vault.azure.net:443/secrets/<exact location>"
+            }
         },
         "reverseProxyCertificateThumbprint": {
             "type": "string",
@@ -159,16 +151,16 @@
                 "description": "Reverse proxy Certificate Thumbprint"
             }
         },
-        "adminClientCertificateThumbprint": {
-            "type": "array",
-            "defaultValue": [],
+        "adminClientCertificateThumbprints": {
+            "type": "string",
+            "defaultValue": "",
             "metadata": {
-                "description": "Admin client Certificate Thumbprint"
+                "description": "Admin client Certificate Thumbprints"
             }
         },
-        "nonAdminClientCertificateThumbprint": {
-            "type": "array",
-            "defaultValue": [],
+        "nonAdminClientCertificateThumbprints": {
+            "type": "string",
+            "defaultValue": "",
             "metadata": {
                 "description": "Non-Admin client Certificate Thumbprint"
             }
@@ -268,22 +260,18 @@
         "scriptName": "PrepareServiceFabricDeployment.ps1",
         "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), variables('scriptName'))]",
 
-        "keyParam": "[concat(' -StorageAccessKey ', parameters('certBlobSASKey') )]",
-        "envParam": "[concat(' -EnvironmentName ', parameters('certBlobCloudName') )]",
-        "storageAcct": "[concat(' -StorageAccountName ', parameters('certBlobAccountName') )]",
-        "containerParam": "[concat(' -ContainerName ', parameters('certBlobContainerName') )]",
-        "clusterCertNameParam": "[concat(' -ClusterCertName ', parameters('clusterCertificateName') )]",
-        "clusterCertPasswordParam": "[concat(' -ClusterCertPassword ', parameters('clusterCertificatePassword') )]",
         "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
-
-        "reverseProxyCertNameParam": "[concat(' -ReverseProxyCertName ', parameters('reverseProxyCertificateName') )]",
-        "reverseProxyCertPasswordParam": "[concat(' -ReverseProxyCertPassword ', parameters('reverseProxyCertificatePassword') )]",
         "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
-        "commandParam0": "[concat(variables('keyParam'), variables('envParam'), variables('storageAcct'), variables('containerParam'), variables('clusterCertNameParam'), variables('clusterCertPasswordParam'), variables('clusterCertThumbprintParam'))]",
+        "commandParam0": "[variables('clusterCertThumbprintParam')]",
+        "commandParam": "[if(equals(trim(parameters('reverseProxyCertificateThumbprint')), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertThumbprintParam')))]",
 
-        "commandParam1": "[if(equals(parameters('reverseProxyCertificateName'), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertNameParam')))]",
-        "commandParam2": "[if(equals(parameters('reverseProxyCertificatePassword'), ''), variables('commandParam1'), concat(variables('commandParam1'), variables('reverseProxyCertPasswordParam')))]",
-        "commandParam": "[if(equals(parameters('reverseProxyCertificateThumbprint'), ''), variables('commandParam2'), concat(variables('commandParam2'), variables('reverseProxyCertThumbprintParam')))]"
+        "isReverseProxyCert": "[if(equals(trim(parameters('reverseProxyCertificateUrlValue')), ''), bool('false'), bool('true'))]",
+        "isSameCert": "[if(equals(parameters('clusterCertificateUrlValue'), parameters('reverseProxyCertificateUrlValue')), bool('true'), bool('false'))]",
+        "certsToInstall": "[if(or(not(variables('isReverseProxyCert')), variables('isSameCert')), array(parameters('clusterCertificateUrlValue')), concat(array(parameters('clusterCertificateUrlValue')), array(parameters('reverseProxyCertificateUrlValue'))))]",
+
+        "delimiters": [ ",", ";" ],
+        "adminClientCertificateThumbprint": "[split(trim(parameters('adminClientCertificateThumbprints')), variables('delimiters'))]",
+        "nonAdminClientCertificateThumbprint": "[split(trim(parameters('nonAdminClientCertificateThumbprints')), variables('delimiters'))]"
     },
     "resources": [
         {
@@ -484,7 +472,24 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computernamePrefix": "[parameters('vmNodeTypeName')]"
+                        "computerNamePrefix": "[parameters('vmNodeTypeName')]",
+                        "secrets": [
+                            {
+                                "sourceVault": {
+                                    "id": "[parameters('sourceVaultValue')]"
+                                },
+                                "copy": [
+                                    {
+                                        "name": "vaultCertificates",
+                                        "count": "[length(variables('certsToInstall'))]",
+                                        "input": {
+                                            "certificateStore": "[variables('certificateStoreValue')]",
+                                            "certificateUrl": "[variables('certsToInstall')[copyIndex('vaultCertificates')]]"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     "storageProfile": {
                         "imageReference": {
@@ -634,23 +639,11 @@
                     "applicationEndPort": {
                         "value": "[variables('applicationEndPort')]"
                     },
-                    "certBlobCloudName": {
-                        "value": "[parameters('certBlobCloudName')]"
+                    "sourceVaultValue": {
+                        "value": "[parameters('sourceVaultValue')]"
                     },
-                    "certBlobAccountName": {
-                        "value": "[parameters('certBlobAccountName')]"
-                    },
-                    "certBlobSASKey": {
-                        "value": "[parameters('certBlobSASKey')]"
-                    },
-                    "certBlobContainerName": {
-                        "value": "[parameters('certBlobContainerName')]"
-                    },
-                    "clusterCertificateName": {
-                        "value": "[parameters('clusterCertificateName')]"
-                    },
-                    "clusterCertificatePassword": {
-                        "value": "[parameters('clusterCertificatePassword')]"
+                    "clusterCertificateUrlValue": {
+                        "value": "[parameters('clusterCertificateUrlValue')]"
                     },
                     "certificateStoreValue": {
                         "value": "[variables('certificateStoreValue')]"
@@ -658,20 +651,17 @@
                     "certificateThumbprint": {
                         "value": "[parameters('certificateThumbprint')]"
                     },
-                    "reverseProxyCertificateName": {
-                        "value": "[parameters('reverseProxyCertificateName')]"
-                    },
-                    "reverseProxyCertificatePassword": {
-                        "value": "[parameters('reverseProxyCertificatePassword')]"
-                    },
                     "reverseProxyCertificateThumbprint": {
                         "value": "[parameters('reverseProxyCertificateThumbprint')]"
                     },
+                    "reverseProxyCertificateUrlValue": {
+                        "value": "[parameters('reverseProxyCertificateUrlValue')]"
+                    },
                     "adminClientCertificateThumbprint": {
-                        "value": "[parameters('adminClientCertificateThumbprint')]"
+                        "value": "[variables('adminClientCertificateThumbprint')]"
                     },
                     "nonAdminClientCertificateThumbprint": {
-                        "value": "[parameters('nonAdminClientCertificateThumbprint')]"
+                        "value": "[variables('nonAdminClientCertificateThumbprint')]"
                     },
                     "ClientConnectionEndpoint": {
                         "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', variables('lbIPName')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]"
