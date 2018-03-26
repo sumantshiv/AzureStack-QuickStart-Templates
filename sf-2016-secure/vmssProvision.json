@@ -24,10 +24,16 @@
                 "description": "List of instance counts for all node types."
             }
         },
-         "nodeTypeIndex": {
+        "nodeTypeIndex": {
             "type": "int",
             "metadata": {
                 "description": "Current node type index."
+            }
+        },
+        "subnetIPPrefixFormat": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnetwork IP prefix format. eg:10.0.[].0/24"
             }
         },
         "overProvision": {
@@ -245,7 +251,7 @@
 
         "deploymentNodeIndex": 0,
 
-        "vmssExtensions0": [
+        "vmssExtensions0": [ 
             {
                 "name": "PrepareServiceFabric",
                 "properties": {
@@ -294,7 +300,8 @@
                             "ClusterName": "[parameters('clusterName')]",
                             "VMNodeTypePrefix": "[parameters('nodeTypePrefix')]",
                             "VMNodeTypeInstanceCounts": "[parameters('nodeTypeInstanceCounts')]",
-                            "VMNodeTypeIndex": "[parameters('nodeTypeIndex')]",
+                            "CurrentVMNodeTypeIndex": "[parameters('nodeTypeIndex')]",
+                            "SubnetIPPrefixFormat" : "[parameters('subnetIPPrefixFormat')]",
                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",
