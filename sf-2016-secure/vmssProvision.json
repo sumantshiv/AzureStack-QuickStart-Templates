@@ -468,7 +468,7 @@
                     "osProfile": {
                         "adminPassword": "[parameters('adminPassword')]",
                         "adminUsername": "[parameters('adminUsername')]",
-                        "computerNamePrefix": "[parameters('nodeTypePrefix')]",
+                        "computerNamePrefix": "[concat(parameters('nodeTypePrefix'), parameters('nodeTypeIndex'))]",
                         "secrets": [
                             {
                                 "sourceVault": {
