@@ -10,7 +10,7 @@
         },
         "nodeTypePrefix": {
             "type": "string",
-            "defaultValue": "Type01",
+            "defaultValue": "MyType",
             "maxLength": 9,
             "metadata": {
                 "description": "Service fabric node type name. Also used for VM scaleset name prefix."
