@@ -381,7 +381,8 @@
                 "count": "[length(variables('nodeTypeInstanceCounts'))]"
             },
             "dependsOn": [
-                "PublicIPProvisioning"
+                "PublicIPProvisioning",
+                "[variables('diagStoreAccountName')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -396,11 +397,17 @@
                     "vmScaleSetName": {
                         "value": "[concat(variables('imageConfig').vmssUniqueName, copyIndex())]"
                     },
-                    "instanceCount": {
-                        "value": "[int(variables('nodeTypeInstanceCounts')[copyIndex()])]"
-                    },
                     "nodeTypePrefix": {
-                        "value": "[concat(parameters('nodeTypePrefix'), copyIndex())]"
+                        "value": "[parameters('nodeTypePrefix')]"
+                    },
+                    "nodeTypeInstanceCounts": {
+                        "value": "[variables('nodeTypeInstanceCounts')]"
+                    },
+                    "nodeTypeIndex": {
+                        "value": "[copyIndex()]"
+                    },
+                    "subnetIPPrefixFormat": {
+                        "value": "[concat(variables('subnetPrefixFirstHalf'), '[]', variables('subnetPrefixSecondHalf'))]"
                     },
                     "overProvision": {
                         "value": "[variables('imageConfig').overProvision]"
@@ -528,7 +535,8 @@
                 "count": "[length(variables('nodeTypeInstanceCounts'))]"
             },
             "dependsOn": [
-                "VMSSProvisioning"
+                "VMSSProvisioning",
+                "[variables('diagStoreAccountName')]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -543,11 +551,17 @@
                     "vmScaleSetName": {
                         "value": "[concat(variables('imageConfig').vmssUniqueName, copyIndex())]"
                     },
-                    "instanceCount": {
-                        "value": "[int(variables('nodeTypeInstanceCounts')[copyIndex()])]"
-                    },
                     "nodeTypePrefix": {
-                        "value": "[concat(parameters('nodeTypePrefix'), copyIndex())]"
+                        "value": "[parameters('nodeTypePrefix')]"
+                    },
+                    "nodeTypeInstanceCounts": {
+                        "value": "[variables('nodeTypeInstanceCounts')]"
+                    },
+                    "nodeTypeIndex": {
+                        "value": "[copyIndex()]"
+                    },
+                    "subnetIPPrefixFormat": {
+                        "value": "[concat(variables('subnetPrefixFirstHalf'), '[]', variables('subnetPrefixSecondHalf'))]"
                     },
                     "overProvision": {
                         "value": "[variables('imageConfig').overProvision]"

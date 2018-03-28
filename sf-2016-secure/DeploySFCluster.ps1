@@ -6,13 +6,19 @@
     [Int] $DeploymentNodeIndex = 0,
 
     [Parameter(Mandatory = $true)]
-    [int] $InstanceCount,
-
-    [Parameter(Mandatory = $true)]
     [string] $ClusterName,
 
     [Parameter(Mandatory = $true)]
-    [string] $vmNodeTypeName,
+    [string] $VMNodeTypePrefix,
+
+    [Parameter(Mandatory = $true)]
+    [Int[]] $VMNodeTypeInstanceCounts,
+
+    [Parameter(Mandatory = $true)]
+    [Int] $CurrentVMNodeTypeIndex,
+
+    [Parameter(Mandatory = $true)]
+    [string] $SubnetIPPrefixFormat,
 
     [Parameter(Mandatory = $true)]
     [string] $clientConnectionEndpointPort,
@@ -88,9 +94,11 @@
         xServiceFabricSecureClusterDeployment DeployServiceFabricSecureConfiguration
         {
             DeploymentNodeIndex = $DeploymentNodeIndex
-            InstanceCount = $InstanceCount
             ClusterName = $ClusterName
-            VMNodeTypeName = $vmNodeTypeName
+            VMNodeTypePrefix = $VMNodeTypePrefix
+            VMNodeTypeInstanceCounts=$VMNodeTypeInstanceCounts
+            CurrentVMNodeTypeIndex=$CurrentVMNodeTypeIndex
+            SubnetIPPrefixFormat=$SubnetIPPrefixFormat
             ClientConnectionEndpointPort = $clientConnectionEndpointPort
             HTTPGatewayEndpointPort = $httpGatewayEndpointPort
             ReverseProxyEndpointPort = $reverseProxyEndpointPort
