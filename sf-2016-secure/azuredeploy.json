@@ -11,7 +11,7 @@
         "nodeTypePrefix": {
             "type": "string",
             "defaultValue": "MyType",
-            "maxLength": 9,
+            "maxLength": 8,
             "metadata": {
                 "description": "Service fabric node type name. Also used for VM scaleset name prefix."
             }
@@ -685,5 +685,13 @@
         }
     ],
     "outputs": {
+        "clusterMgmtEndpoint": {
+            "value": "[concat('https://',reference(concat('Microsoft.Network/publicIPAddresses/', concat(concat(variables('imageConfig').vmssUniqueName, '0'), 'pip')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricHttpGatewayPort'), '/explorer')]",
+            "type": "string"
+        },
+        "clientConnectionEndpoint": {
+            "value": "[concat(reference(concat('Microsoft.Network/publicIPAddresses/', concat(concat(variables('imageConfig').vmssUniqueName, '0'), 'pip')), variables('apiVersion').publicIPApiVersion).dnsSettings.fqdn, ':', parameters('servicefabricTcpGatewayPort'))]",
+            "type": "string"
+        }
     }
 }
