@@ -18,9 +18,6 @@
     [Int] $CurrentVMNodeTypeIndex,
 
     [Parameter(Mandatory = $true)]
-    [string] $SubnetIPPrefixFormat,
-
-    [Parameter(Mandatory = $true)]
     [string] $clientConnectionEndpointPort,
 
     [Parameter(Mandatory = $true)]
@@ -98,7 +95,6 @@
             VMNodeTypePrefix = $VMNodeTypePrefix
             VMNodeTypeInstanceCounts=$VMNodeTypeInstanceCounts
             CurrentVMNodeTypeIndex=$CurrentVMNodeTypeIndex
-            SubnetIPPrefixFormat=$SubnetIPPrefixFormat
             ClientConnectionEndpointPort = $clientConnectionEndpointPort
             HTTPGatewayEndpointPort = $httpGatewayEndpointPort
             ReverseProxyEndpointPort = $reverseProxyEndpointPort

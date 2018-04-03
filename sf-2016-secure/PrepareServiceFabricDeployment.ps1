@@ -8,7 +8,7 @@
         [string] $ReverseProxyCertificateThumbprint="",
 
         [parameter(Mandatory = $true)]
-        [string] $SubnetIPPrefixFormat,
+        [string] $SubnetIPFormat,
 
         [parameter(Mandatory = $true)]
         [System.UInt32] $NodeTypeCount
@@ -29,7 +29,7 @@ Write-Verbose "Add remote IP addresses for Windows Remote Management (HTTP-In) f
 $IParray = @()
 for($i = 0; $i -lt $NodeTypeCount; $i ++)
 {
-    $IParray += $SubnetIPPrefixFormat.Replace("[]", $i)
+    $IParray += $SubnetIPFormat.Replace("[]", $i)
 }
 Set-NetFirewallRule -Name 'WINRM-HTTP-In-TCP-PUBLIC' -RemoteAddress $IParray
 Write-Verbose "Subnet IPs enabled in WINRM-HTTP-In-TCP-PUBLIC: $IParray"

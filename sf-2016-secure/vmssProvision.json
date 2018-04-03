@@ -30,7 +30,7 @@
                 "description": "Current node type index."
             }
         },
-        "subnetIPPrefixFormat": {
+        "subnetIPFormat": {
             "type": "string",
             "metadata": {
                 "description": "Subnetwork IP prefix format. eg:10.0.[].0/24"
@@ -241,7 +241,7 @@
         "scriptName": "PrepareServiceFabricDeployment.ps1",
         "serviceFabricPrepareScriptUrl": "[uri(parameters('scriptBaseUrl'), variables('scriptName'))]",
         "clusterCertThumbprintParam": "[concat(' -CertificateThumbprint ', parameters('certificateThumbprint') )]",
-        "networkParam" : "[concat(concat(' -SubnetIPPrefixFormat ', parameters('subnetIPPrefixFormat') ), concat(' -NodeTypeCount ', length(parameters('nodeTypeInstanceCounts')) ))]",
+        "networkParam" : "[concat(concat(' -SubnetIPFormat ', parameters('subnetIPFormat') ), concat(' -NodeTypeCount ', length(parameters('nodeTypeInstanceCounts')) ))]",
         "reverseProxyCertThumbprintParam": "[concat(' -ReverseProxyCertificateThumbprint ', parameters('reverseProxyCertificateThumbprint') )]",
         "commandParam0": "[concat(variables('clusterCertThumbprintParam'), variables('networkParam'))]",
         "commandParam": "[if(equals(trim(parameters('reverseProxyCertificateThumbprint')), ''), variables('commandParam0'), concat(variables('commandParam0'), variables('reverseProxyCertThumbprintParam')))]",
@@ -302,7 +302,6 @@
                             "VMNodeTypePrefix": "[parameters('nodeTypePrefix')]",
                             "VMNodeTypeInstanceCounts": "[parameters('nodeTypeInstanceCounts')]",
                             "CurrentVMNodeTypeIndex": "[parameters('nodeTypeIndex')]",
-                            "SubnetIPPrefixFormat" : "[parameters('subnetIPPrefixFormat')]",
                             "clientConnectionEndpointPort": "[parameters('servicefabricTcpGatewayPort')]",
                             "httpGatewayEndpointPort": "[parameters('servicefabricHttpGatewayPort')]",
                             "reverseProxyEndpointPort": "[parameters('servicereverseProxyEndpointPort')]",

@@ -350,28 +350,28 @@
                 }
             },
         {
-                "apiVersion": "[variables('apiVersion').publicIPApiVersion]",
-                "type": "Microsoft.Network/publicIPAddresses",
-                "name": "[concat(concat(variables('imageConfig').vmssUniqueName, copyIndex()), 'pip')]",
-                "location": "[variables('location')]",
-                "copy": {
-                     "name": "PublicIPProvisioning",
-                     "count": "[length(variables('nodeTypeInstanceCounts'))]"
-                },
-                "dependsOn": [
-                    "[variables('vnetID')]"
-                ],
-                "properties": {
-                    "dnsSettings": {
-                        "domainNameLabel": "[if(equals(string(copyIndex()), '0'), variables('dnsLabel'), concat(variables('dnsLabel'), copyIndex()))]"
-                    },
-                    "publicIPAllocationMethod": "Dynamic"
-                },
-                "tags": {
-                    "resourceType": "Service Fabric",
-                    "displayName": "PublicIP"
-                }
+            "apiVersion": "[variables('apiVersion').publicIPApiVersion]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(concat(variables('imageConfig').vmssUniqueName, copyIndex()), 'pip')]",
+            "location": "[variables('location')]",
+            "copy": {
+                 "name": "PublicIPProvisioning",
+                 "count": "[length(variables('nodeTypeInstanceCounts'))]"
             },
+            "dependsOn": [
+                "[variables('vnetID')]"
+            ],
+            "properties": {
+                "dnsSettings": {
+                    "domainNameLabel": "[if(equals(string(copyIndex()), '0'), variables('dnsLabel'), concat(variables('dnsLabel'), copyIndex()))]"
+                },
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "tags": {
+                "resourceType": "Service Fabric",
+                "displayName": "PublicIP"
+            }
+        },
         {
             "apiVersion": "[variables('apiVersion').templateDeploymentApiVersion]",
             "name": "[concat('VMSSProvisioning', copyindex())]",
@@ -406,7 +406,7 @@
                     "nodeTypeIndex": {
                         "value": "[copyIndex()]"
                     },
-                    "subnetIPPrefixFormat": {
+                    "subnetIPFormat": {
                         "value": "[concat(variables('subnetPrefixFirstHalf'), '[]', variables('subnetPrefixSecondHalf'))]"
                     },
                     "overProvision": {
@@ -560,7 +560,7 @@
                     "nodeTypeIndex": {
                         "value": "[copyIndex()]"
                     },
-                    "subnetIPPrefixFormat": {
+                    "subnetIPFormat": {
                         "value": "[concat(variables('subnetPrefixFirstHalf'), '[]', variables('subnetPrefixSecondHalf'))]"
                     },
                     "overProvision": {
