@@ -190,9 +190,16 @@
         "serviceFabricUrl": {
             "type": "string",
             "metadata": {
-                "description": "Service fabric runtime download url."
+                "description": "Service fabric deployment pakage download url."
             },
             "defaultValue": "http://go.microsoft.com/fwlink/?LinkId=730690"
+        },
+        "serviceFabricRuntimeUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Service fabric runtime download url. Leave it empty if using the latest."
+        },
+        "defaultValue": ""
         },
         "scriptBaseUrl": {
             "type": "string",
@@ -520,6 +527,9 @@
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"
                     },
+                    "serviceFabricRuntimeUrl": {
+                        "value": "[parameters('serviceFabricRuntimeUrl')]"
+                    },
                     "scriptBaseUrl": {
                         "value": "[parameters('scriptBaseUrl')]"
                     }
@@ -676,6 +686,9 @@
                     },
                     "serviceFabricUrl": {
                         "value": "[parameters('serviceFabricUrl')]"
+                    },
+                    "serviceFabricRuntimeUrl": {
+                        "value": "[parameters('serviceFabricRuntimeUrl')]"
                     },
                     "scriptBaseUrl": {
                         "value": "[parameters('scriptBaseUrl')]"

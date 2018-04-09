@@ -198,6 +198,12 @@
                 "description": "Service fabric runtime download url."
             }
         },
+        "serviceFabricRuntimeUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Service fabric runtime download url. Leave it empty if using the latest."
+            }
+        },
         "scriptBaseUrl": {
             "type": "string",
             "metadata": {
@@ -319,6 +325,7 @@
                             "RepairManager": "[parameters('RepairManager')]",
                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
+                            "serviceFabricRuntimeUrl": "[parameters('serviceFabricRuntimeUrl')]",
                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                             "DiagStoreAccountKey": "[parameters('diagStoreAccountKey')]",
                             "DiagStoreAccountBlobUri": "[parameters('diagStoreAccountBlobUri')]",
