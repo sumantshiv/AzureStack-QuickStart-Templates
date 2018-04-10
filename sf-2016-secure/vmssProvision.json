@@ -255,6 +255,7 @@
         "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
         "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
         "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.X509.MultiMachine.json')]",
+        "serviceFabricRuntimeUrl": "[if (equals(trim(parameters('serviceFabricRuntimeUrl')), '')), 'N/A', parameters('serviceFabricRuntimeUrl')]",
 
         "deploymentNodeIndex": 0,
 
@@ -325,7 +326,7 @@
                             "RepairManager": "[parameters('RepairManager')]",
                             "ConfigPath": "[variables('serviceFabricConfigPath')]",
                             "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
-                            "serviceFabricRuntimeUrl": "[parameters('serviceFabricRuntimeUrl')]",
+                            "serviceFabricRuntimeUrl": "[variables('serviceFabricRuntimeUrl')]",
                             "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                             "DiagStoreAccountKey": "[parameters('diagStoreAccountKey')]",
                             "DiagStoreAccountBlobUri": "[parameters('diagStoreAccountBlobUri')]",
