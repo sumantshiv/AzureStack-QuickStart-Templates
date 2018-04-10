@@ -255,7 +255,7 @@
         "serviceFabricDeploymentModuleUrl": "[uri(parameters('scriptBaseUrl'), 'DeploySFCluster.zip')]",
         "serviceFabricDeploymentConfigFunction": "DeploySFCluster.ps1\\InstallServiceFabricConfiguration",
         "serviceFabricConfigPath": "[uri(parameters('scriptBaseUrl'), 'ClusterConfig.X509.MultiMachine.json')]",
-        "serviceFabricRuntimeUrl": "[if (equals(trim(parameters('serviceFabricRuntimeUrl')), ''), 'N/A', parameters('serviceFabricRuntimeUrl')]",
+        "serviceFabricRuntimeUrl": "[if(equals(trim(parameters('serviceFabricRuntimeUrl')), ''), 'N/A', parameters('serviceFabricRuntimeUrl'))]",
 
         "deploymentNodeIndex": 0,
 
