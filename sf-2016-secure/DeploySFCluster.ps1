@@ -44,6 +44,9 @@
     [Parameter(Mandatory = $false)]
     [string] $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690",
 
+    [Parameter(Mandatory = $false)]
+    [string] $serviceFabricRuntimeUrl = "NULL",
+
     [Parameter(Mandatory = $true)]
     [PSCredential] $Credential,
 
@@ -104,6 +107,7 @@
             ApplicationEndPort = $applicationEndPort
             ConfigPath = $ConfigPath
             ServiceFabricUrl = $serviceFabricUrl
+            ServiceFabricRuntimeUrl = $serviceFabricRuntimeUrl
             DiagStoreAccountName = $DiagStoreAccountName
             DiagStoreAccountKey = $DiagStoreAccountKey
             DiagStoreAccountBlobUri = $DiagStoreAccountBlobUri
