@@ -45,7 +45,7 @@
     [string] $serviceFabricUrl = "http://go.microsoft.com/fwlink/?LinkId=730690",
 
     [Parameter(Mandatory = $false)]
-    [string] $serviceFabricRuntimeUrl,
+    [string] $serviceFabricRuntimeUrl = "NULL",
 
     [Parameter(Mandatory = $true)]
     [PSCredential] $Credential,
