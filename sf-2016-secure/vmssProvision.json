@@ -319,7 +319,7 @@
                         "RepairManager": "[parameters('RepairManager')]",
                         "ConfigPath": "[variables('serviceFabricConfigPath')]",
                         "serviceFabricUrl": "[parameters('serviceFabricUrl')]",
-                        "serviceFabricRuntimeUrl": "[parameters('serviceFabricUrl')]",
+                        "serviceFabricRuntimeUrl": "NULL",
                         "DiagStoreAccountName": "[parameters('diagStoreAccountName')]",
                         "DiagStoreAccountKey": "[parameters('diagStoreAccountKey')]",
                         "DiagStoreAccountBlobUri": "[parameters('diagStoreAccountBlobUri')]",
