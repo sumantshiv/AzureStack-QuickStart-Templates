@@ -1,101 +1,116 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.16.08.15",
-  "parameters": {
-    "azureAccountUsername": {
-      "type": "string",
-      "metadata": {
-        "description": "Azure tenant user name to authenticate inside controller VM."
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.16.08.15",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+      "azureAccountUsername": {
+        "type": "string",
+        "metadata": {
+          "description": "Azure tenant user name to authenticate inside controller VM."
+        }
+      },
+      "azureAccountPassword": {
+        "type": "string",
+        "defaultValue": "[subscription().subscriptionId]",
+        "metadata": {
+          "description": "Azure tenant user password to authenticate inside controller VM."
+        }
+      },
+      "vmAdminPassword": {
+        "type": "securestring",
+        "defaultValue": "[concat('Subscription#',subscription().subscriptionId)]",
+        "metadata": {
+          "description": "Admin password for the VMs"
+        }
+      },
+      "tenantId": {
+        "type": "string",
+        "metadata": {
+          "description": "Azure Subscription Tenant Id."
+        }
+      },
+      "vmCount": {
+        "type": "int",
+        "defaultValue": 2,
+        "metadata": {
+          "description": "Number of VMs to create."
+        }
+      },
+      "batchSize": {
+        "type": "int",
+        "defaultValue": "[parameters('vmCount')]",
+        "metadata": {
+          "description": "Number of VMs to create in a batch."
+        }
+      },
+      "vmSize": {
+        "type": "string",
+        "defaultValue": "Standard_A2",
+        "allowedValues": [
+          "Standard_A0",
+          "Standard_A1",
+          "Standard_A2",
+          "Standard_A3",
+          "Standard_A4",
+          "Standard_A5",
+          "Standard_A6",
+          "Standard_A7"
+        ],
+        "metadata": {
+          "description": "VM size supported by Azure Stack."
+        }
+      },
+      "vmOsSku": {
+        "type": "string",
+        "defaultValue": "2012-R2-Datacenter",
+        "allowedValues": [
+          "2012-R2-Datacenter",
+          "2016-Datacenter"
+        ],
+        "metadata": {
+          "description": "VM size supported by Azure Stack."
+        }
       }
     },
-    "azureAccountPassword": {
-      "type": "string",
-      "defaultValue": "[subscription().subscriptionId]",
-      "metadata": {
-        "description": "Azure tenant user password to authenticate inside controller VM."
-      }
+    "variables": {
+      "imagePublisher": "MicrosoftWindowsServer",
+      "imageOffer": "WindowsServer",
+      "addressPrefix": "10.0.0.0/16",
+      "location": "[resourceGroup().location]",
+      "subnetName": "[concat('vsn', resourceGroup().name)]",
+      "subnetPrefix": "10.0.0.0/16",
+      "storageAccountType": "Standard_LRS",
+      "uniqueStorageAccountName": "[concat('sa', resourceGroup().name)]",
+      "uniqueStorageAccountContainerName": "[concat('sc', resourceGroup().name)]",
+      "vmOsSku": "[parameters('vmOsSku')]",
+      "vmAdminUsername": "vmadministrator",
+      "vmName": "[concat('vm', resourceGroup().name)]",
+      "vmOsDiskName": "[concat('od', resourceGroup().name)]",
+      "vmNicName": "[concat('nc', resourceGroup().name)]",
+      "virtualNetworkName": "[concat('vn', resourceGroup().name)]",
+      "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
+      "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+      "nsgName": "[concat('ng', resourceGroup().name)]",
+      "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
+      "modulesPath": "https://raw.githubusercontent.com/Azure/AzureStack-QuickStart-Templates/master/bootstorm-vm-boot-time/",
+      "moduleVMBootAll": "VMBootAll.zip",
+      "modulesUrlVMBootAll": "[concat(variables('modulesPath'),variables('moduleVMBootAll'))]",
+      "configurationFunctionVMBootAll": "VMBootAll.ps1\\ConfigureVMBootAll",
+      "publicIPAddressName": "[tolower(concat('vmpip',resourceGroup().name))]",
+      "dnsPrefix": "[tolower(concat('vmdns', resourceGroup().name))]",
+      "controllerVmSize": "Standard_A4"
     },
-    "tenantId": {
-      "type": "string",
-      "metadata": {
-        "description": "Azure Subscription Tenant Id."
-      }
-    },
-    "vmCount": {
-      "type": "int",
-      "defaultValue": 2,
-      "metadata": {
-        "description": "Number of VMs to create."
-      }
-    },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": "Standard_A2",
-      "allowedValues": [
-        "Standard_A0",
-        "Standard_A1",
-        "Standard_A2",
-        "Standard_A3",
-        "Standard_A4",
-        "Standard_A5",
-        "Standard_A6",
-        "Standard_A7"
-      ],
-      "metadata": {
-        "description": "VM size supported by Azure Stack."
-      }
-    },
-    "vmOsSku": {
-      "type": "string",
-      "defaultValue": "2012-R2-Datacenter",
-      "allowedValues": [
-        "2012-R2-Datacenter",
-        "2016-Datacenter"
-      ],
-      "metadata": {
-        "description": "VM size supported by Azure Stack."
-      }   
-    }
-  },
-  "variables": {
-    "imagePublisher": "MicrosoftWindowsServer",
-    "imageOffer": "WindowsServer",
-    "addressPrefix": "10.0.0.0/16",
-    "location": "[resourceGroup().location]",
-    "subnetName": "[concat('vsn', resourceGroup().name)]",
-    "subnetPrefix": "10.0.0.0/16",
-    "storageAccountType": "Standard_LRS",
-    "uniqueStorageAccountName": "[concat('sa', resourceGroup().name)]",
-    "uniqueStorageAccountContainerName": "[concat('sc', resourceGroup().name)]",
-    "vmOsSku": "[parameters('vmOsSku')]",
-    "vmAdminUsername": "vmadministrator",
-    "vmAdminPassword": "pwd0a!8b7",
-    "vmName": "[concat('vm', resourceGroup().name)]",
-    "vmOsDiskName": "[concat('od', resourceGroup().name)]",
-    "vmNicName": "[concat('nc', resourceGroup().name)]",
-    "virtualNetworkName": "[concat('vn', resourceGroup().name)]",
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "nsgName": "[concat('ng', resourceGroup().name)]",
-    "nsgID": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('nsgName'))]",
-    "modulesPath": "https://raw.githubusercontent.com/Azure/AzureStack-QuickStart-Templates/master/bootstorm-vm-boot-time/",
-    "moduleVMBootAll": "VMBootAll.zip",
-    "modulesUrlVMBootAll": "[concat(variables('modulesPath'),variables('moduleVMBootAll'))]",
-    "configurationFunctionVMBootAll": "VMBootAll.ps1\\ConfigureVMBootAll",
-    "controllerVmSize": "Standard_A2"
-  },
   "resources": [
     {
-      "apiVersion": "2015-06-15",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[tolower(variables('uniqueStorageAccountName'))]",
       "location": "[variables('location')]",
-      "properties": {
-        "accountType": "[variables('storageAccountType')]"
-      }
+      "sku": {
+        "name": "[variables('storageAccountType')]"
+      },
+      "kind": "Storage"
     },
     {
-      "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsgName')]",
       "location": "[variables('location')]",
@@ -118,7 +133,6 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
       "location": "[variables('location')]",
@@ -143,12 +157,26 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('dnsPrefix')]"
+        }
+      },
+      "dependsOn": [
+        "[variables('vnetID')]"
+      ]
+    },
+    {
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('vmNicName')]",
       "location": "[variables('location')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/',variables('virtualNetworkName'))]"
+        "[concat('Microsoft.Network/virtualNetworks/',variables('virtualNetworkName'))]",
+        "[concat('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -158,6 +186,9 @@
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('subnetRef')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
               }
             }
           }
@@ -165,7 +196,6 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('vmNicName'),copyIndex())]",
       "location": "[variables('location')]",
@@ -191,13 +221,11 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
       "location": "[variables('location')]",
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/',variables('uniqueStorageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/',variables('vmNicName'))]"
+        "vmLoop"
       ],
       "properties": {
         "hardwareProfile": {
@@ -206,7 +234,7 @@
         "osProfile": {
           "computerName": "[variables('vmName')]",
           "adminUsername": "[variables('vmAdminUsername')]",
-          "adminPassword": "[variables('vmAdminPassword')]"
+          "adminPassword": "[parameters('vmAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
@@ -240,13 +268,14 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('vmName'),copyIndex())]",
       "location": "[variables('location')]",
       "copy": {
         "name": "vmLoop",
-        "count": "[parameters('vmCount')]"
+        "count": "[parameters('vmCount')]",
+        "mode": "Serial",
+        "batchSize": "[parameters('batchSize')]"
       },
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/',variables('uniqueStorageAccountName'))]",
@@ -259,7 +288,7 @@
         "osProfile": {
           "computerName": "[variables('vmName')]",
           "adminUsername": "[variables('vmAdminUsername')]",
-          "adminPassword": "[variables('vmAdminPassword')]"
+          "adminPassword": "[parameters('vmAdminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
@@ -293,7 +322,6 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('vmName'),'/dscExtension')]",
       "location": "[variables('location')]",
@@ -329,11 +357,11 @@
         },
         "protectedSettings": {
           "items": {
-            "vmAdminPassword": "[variables('vmAdminPassword')]",
+            "vmAdminPassword": "[parameters('vmAdminPassword')]",
             "azureAccountPassword": "[parameters('azureAccountPassword')]"
           }
         }
       }
     }
   ]
-}
+  }
